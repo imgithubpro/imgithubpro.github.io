@@ -4,8 +4,100 @@
     <title>imgithubpro</title>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
-    <description>develper blog</description>
-    <pubDate>Thu, 26 Apr 2018 20:08:47 +0900</pubDate>
+    <description></description>
+    <pubDate>Fri, 27 Apr 2018 11:54:37 +0900</pubDate>
+    
+      <item>
+        <title>Docker install &amp; hello world</title>
+        <link>/docker/2018/04/27/001.html</link>
+        <guid isPermaLink="true">/docker/2018/04/27/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;CentOS 7 기준으로 도커를 설치하고, 간단한 hello-world 예제 실행해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;도커란 무엇인가&lt;/h2&gt;
+&lt;hr /&gt;
+&lt;p&gt;컨테이너 기반으로 애플리케이션을 개발, 배포, 실행할 수 있게 해주는 플랫폼&lt;/p&gt;
+&lt;h3&gt;이미지와 컨테이너&lt;/h3&gt;
+&lt;h4&gt;이미지&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;애플리케이션이 실행되는데 필요한 모든 것이 포함된 실행가능한 패키지&lt;/li&gt;
+  &lt;li&gt;코드, 런타임 라이브러리, 환경 변수, 설정 파일 등을 포함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;컨테이너&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;컨테이너는 이미지를 실행한 상태&lt;/li&gt;
+  &lt;li&gt;이미지의 런타임 인스턴스&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker ps&lt;/code&gt; 명령을 통해서 실행중인 컨테이너 리스트 확인
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;컨테이너와 가상머신&lt;/h3&gt;
+&lt;hr /&gt;
+&lt;h4&gt;컨테이너&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;리눅스에서 호스트 머신의 커널을 다른 컨테이너들과 공유하며 네이티브로 실행&lt;/li&gt;
+  &lt;li&gt;개별 프로세스로 실행&lt;/li&gt;
+  &lt;li&gt;애플리케이션에 필요한 메모리만을 사용하여 가벼움&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4&gt;가상머신(Virtual machine)&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;하이퍼바이저를 통해 호스트 리소스에 대한 가상 액세스 권한을 가진 “게스트” 운영 체제를 실행&lt;/li&gt;
+  &lt;li&gt;일반적으로 애플리케이션에서 필요한 것보다 많은 리소스 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/post/container.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/assets/img/post/vm.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;h2&gt;설치하기&lt;/h2&gt;
+&lt;hr /&gt;
+&lt;p&gt;os 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ grep . /etc/*-release
+/etc/centos-release:CentOS Linux release 7.4.1708 (Core)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;CentOS 7 기준&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo yum install docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;버전 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker -v # --version
+Docker version 1.13.1, build 774336d/1.13.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;sudo 없이 docker 명령어 실행을 위한 docker 그룹 설정&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo groupadd docker
+$ sudo gpasswd -a ${USER} docker
+$ sudo service docker restart
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2&gt;hello-world&lt;/h2&gt;
+&lt;p&gt;이미지 리스트&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker image ls
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;hello-world 실행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker run hello-world
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;이미지기 없는 경우 자동으로 pull 된 후에 실행&lt;/li&gt;
+  &lt;li&gt;이미지 리스트에 다운된 hello-world가 추가&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker image ls
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+docker.io/hello-world   latest              e38bc07ac18e        2 weeks ago         1.85 kB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;컨테이너 리스트&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container ls # --all or -aq
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;br /&gt;
+참고 : &lt;a href=&quot;https://docs.docker.com/get-started/&quot;&gt;https://docs.docker.com/get-started/&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Fri, 27 Apr 2018 00:00:00 +0900</pubDate>
+      </item>
     
   </channel>
 </rss>

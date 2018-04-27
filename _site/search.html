@@ -3,7 +3,7 @@
   <head>
 	<meta charset="utf-8">
 	<title>Search | imgithubpro</title>
-	<meta name="description" content="develper blog">
+	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<!-- CSS -->
@@ -27,9 +27,6 @@
 	
 
 	<!-- KaTeX -->
-	
-	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
-	<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.js"></script>
 	
 
 	<!-- Google Analytics -->
@@ -77,6 +74,14 @@
 			
 			
 			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
 			
 			
 			<!-- Social icons from Font Awesome, if enabled  -->
@@ -168,6 +173,17 @@
 <script>
   window.store = {
     
+      "docker-2018-04-27-001-html": {
+        "title": "Docker install &amp; hello world",
+        "tags": "docker, devops",
+        "date": "April 27, 2018",
+        "author": "",
+        "category": "",
+        "content": "  CentOS 7 기준으로 도커를 설치하고, 간단한 hello-world 예제 실행해보자.도커란 무엇인가컨테이너 기반으로 애플리케이션을 개발, 배포, 실행할 수 있게 해주는 플랫폼이미지와 컨테이너이미지  애플리케이션이 실행되는데 필요한 모든 것이 포함된 실행가능한 패키지  코드, 런타임 라이브러리, 환경 변수, 설정 파일 등을 포함컨테이너  컨테이너는 이미지를 실행한 상태  이미지의 런타임 인스턴스  docker ps 명령을 통해서 실행중인 컨테이너 리스트 확인컨테이너와 가상머신컨테이너  리눅스에서 호스트 머신의 커널을 다른 컨테이너들과 공유하며 네이티브로 실행  개별 프로세스로 실행  애플리케이션에 필요한 메모리만을 사용하여 가벼움가상머신(Virtual machine)  하이퍼바이저를 통해 호스트 리소스에 대한 가상 액세스 권한을 가진 “게스트” 운영 체제를 실행  일반적으로 애플리케이션에서 필요한 것보다 많은 리소스 사용설치하기os 확인$ grep . /etc/*-release/etc/centos-release:CentOS Linux release 7.4.1708 (Core)CentOS 7 기준sudo yum install docker버전 확인$ docker -v # --versionDocker version 1.13.1, build 774336d/1.13.1sudo 없이 docker 명령어 실행을 위한 docker 그룹 설정$ sudo groupadd docker$ sudo gpasswd -a ${USER} docker$ sudo service docker restarthello-world이미지 리스트$ docker image lsREPOSITORY              TAG                 IMAGE ID            CREATED             SIZEhello-world 실행$ docker run hello-world  이미지기 없는 경우 자동으로 pull 된 후에 실행  이미지 리스트에 다운된 hello-world가 추가$ docker image lsREPOSITORY              TAG                 IMAGE ID            CREATED             SIZEdocker.io/hello-world   latest              e38bc07ac18e        2 weeks ago         1.85 kB컨테이너 리스트$ docker container ls # --all or -aq참고 : https://docs.docker.com/get-started/",
+        "url": "//docker/2018/04/27/001.html"
+      }
+      
+    
   };
 </script>
 
@@ -178,8 +194,6 @@
 
     </div>
     
-<script src="/assets/js/katex_init.js"></script>
-
 
 
 <footer class="site-footer">

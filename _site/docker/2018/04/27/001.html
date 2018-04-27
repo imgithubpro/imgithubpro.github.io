@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>Docker install & hello world | imgithubpro</title>
+	<meta name="description" content="  CentOS 7 기준으로 도커를 설치하고, 간단한 hello-world 예제 실행해보자.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="/docker/2018/04/27/001.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+
+	<!-- Google Analytics -->
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">imgithubpro</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			<li>
+				<a class="page-link" href="/categories/">
+					Categories
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
+			
+			
+			<!-- Social icons from Font Awesome, if enabled  -->
+			
+
+
+<li>
+	<a href="mailto:imgoooglepro@gmail.com" title="Email">
+		<i class="fa fa-fw fa-envelope"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/imgithubpro" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            <!-- Search bar -->
+            
+            <li>
+            <form action="/search.html" method="get">
+                <input type="text" id="search-box" name="query" placeholder="Search" class="">
+                <button type="submit" class="">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </form>
+            </li>
+            
+		</ul>
+	</nav>
+    
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">Docker install & hello world</h1>
+    
+    <p class="meta">
+      April 27, 2018
+      
+    </p>
+  </header>
+  <section class="post-content"><blockquote>
+  <p>CentOS 7 기준으로 도커를 설치하고, 간단한 hello-world 예제 실행해보자.</p>
+</blockquote>
+
+<p><br /></p>
+<h2>도커란 무엇인가</h2>
+<hr />
+<p>컨테이너 기반으로 애플리케이션을 개발, 배포, 실행할 수 있게 해주는 플랫폼</p>
+<h3>이미지와 컨테이너</h3>
+<h4>이미지</h4>
+<ul>
+  <li>애플리케이션이 실행되는데 필요한 모든 것이 포함된 실행가능한 패키지</li>
+  <li>코드, 런타임 라이브러리, 환경 변수, 설정 파일 등을 포함</li>
+</ul>
+
+<h4>컨테이너</h4>
+<ul>
+  <li>컨테이너는 이미지를 실행한 상태</li>
+  <li>이미지의 런타임 인스턴스</li>
+  <li><code class="highlighter-rouge">docker ps</code> 명령을 통해서 실행중인 컨테이너 리스트 확인
+<br /></li>
+</ul>
+
+<h3>컨테이너와 가상머신</h3>
+<hr />
+<h4>컨테이너</h4>
+<ul>
+  <li>리눅스에서 호스트 머신의 커널을 다른 컨테이너들과 공유하며 네이티브로 실행</li>
+  <li>개별 프로세스로 실행</li>
+  <li>애플리케이션에 필요한 메모리만을 사용하여 가벼움</li>
+</ul>
+
+<h4>가상머신(Virtual machine)</h4>
+<ul>
+  <li>하이퍼바이저를 통해 호스트 리소스에 대한 가상 액세스 권한을 가진 “게스트” 운영 체제를 실행</li>
+  <li>일반적으로 애플리케이션에서 필요한 것보다 많은 리소스 사용</li>
+</ul>
+
+<p><img src="/assets/img/post/container.png" width="300" />
+<img src="/assets/img/post/vm.png" width="300" /></p>
+
+<h2>설치하기</h2>
+<hr />
+<p>os 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grep . /etc/*-release
+/etc/centos-release:CentOS Linux release 7.4.1708 (Core)
+</code></pre></div></div>
+<p>CentOS 7 기준</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo yum install docker
+</code></pre></div></div>
+<p>버전 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker -v # --version
+Docker version 1.13.1, build 774336d/1.13.1
+</code></pre></div></div>
+<p>sudo 없이 docker 명령어 실행을 위한 docker 그룹 설정</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo groupadd docker
+$ sudo gpasswd -a ${USER} docker
+$ sudo service docker restart
+</code></pre></div></div>
+
+<h2>hello-world</h2>
+<p>이미지 리스트</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker image ls
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+</code></pre></div></div>
+<p>hello-world 실행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker run hello-world
+</code></pre></div></div>
+<ul>
+  <li>이미지기 없는 경우 자동으로 pull 된 후에 실행</li>
+  <li>이미지 리스트에 다운된 hello-world가 추가</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker image ls
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+docker.io/hello-world   latest              e38bc07ac18e        2 weeks ago         1.85 kB
+</code></pre></div></div>
+<p>컨테이너 리스트</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker container ls # --all or -aq
+</code></pre></div></div>
+<p><br /></p>
+<hr />
+<p><br />
+참고 : <a href="https://docs.docker.com/get-started/">https://docs.docker.com/get-started/</a></p>
+</section>
+  
+<footer>
+  <div class="tags">
+    
+    <a class="tag" href="/tags#docker">#docker</a>
+    
+    <a class="tag" href="/tags#devops">#devops</a>
+    
+  </div>
+</footer>
+
+
+</article>
+
+<!-- Disqus -->
+
+
+<!-- Post navigation -->
+
+
+    </div>
+    
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/rohanchandra/type-theme">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>
