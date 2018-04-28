@@ -5,7 +5,212 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Fri, 27 Apr 2018 11:54:37 +0900</pubDate>
+    <pubDate>Sat, 28 Apr 2018 20:58:26 +0900</pubDate>
+    
+      <item>
+        <title>도커를 이용한 간단한 앱 만들기</title>
+        <link>/docker/2018/04/28/001.html</link>
+        <guid isPermaLink="true">/docker/2018/04/28/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;Dockerfile을 사용하여 컨테이너를 정의하여 실행해보자.&lt;br /&gt;생성한 이미지들을 리모트 저장소에 저장하고, 해당 이미지를 사용한다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;도커 파일을 이용한 컨테이너 정의&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt;은 컨테이너의 환경 설정을 정의&lt;/li&gt;
+  &lt;li&gt;디스크나 네트워크 인터페이스에 대한 접근을 가상화하여 환경 설정에 정의하여 시스템으로부터 분리&lt;/li&gt;
+  &lt;li&gt;Dockerfile을 통해서 정의한 app은 어디서나 동일하게 실행 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;도커파일 정의하기&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;빈 디렉토리를 생성하여 그 안에 아래 3개의 파일들을 입력&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Dockerfile&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Use an official Python runtime as a parent image
+FROM python:2.7-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+ADD . /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME World
+
+# Run app.py when the container launches
+CMD [&quot;python&quot;, &quot;app.py&quot;]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;requirements.txt&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Flask
+Redis
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;app.py&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;from flask import Flask
+from redis import Redis, RedisError
+import os
+import socket
+
+# Connect to Redis
+redis = Redis(host=&quot;redis&quot;, db=0, socket_connect_timeout=2, socket_timeout=2)
+
+app = Flask(__name__)
+
+@app.route(&quot;/&quot;)
+def hello():
+    try:
+        visits = redis.incr(&quot;counter&quot;)
+    except RedisError:
+        visits = &quot;&amp;lt;i&amp;gt;cannot connect to Redis, counter disabled&amp;lt;/i&amp;gt;&quot;
+
+    html = &quot;&amp;lt;h3&amp;gt;Hello {name}!&amp;lt;/h3&amp;gt;&quot; \
+           &quot;&amp;lt;b&amp;gt;Hostname:&amp;lt;/b&amp;gt; {hostname}&amp;lt;br/&amp;gt;&quot; \
+           &quot;&amp;lt;b&amp;gt;Visits:&amp;lt;/b&amp;gt; {visits}&quot;
+    return html.format(name=os.getenv(&quot;NAME&quot;, &quot;world&quot;), hostname=socket.gethostname(), visits=visits)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host='0.0.0.0', port=80)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2&gt;앱 빌드하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;빌드를 위한 디렉토리 구조&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ls
+Dockerfile		app.py			requirements.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/build/&quot;&gt;docker build&lt;/a&gt; 명령을 통해  Dockerfile로부터 이미지를 빌드&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-t&lt;/code&gt;옵션을 사용해서 tag로 사용할 이름을 설정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker build -t friendlyhello .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;생성된 이미지 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker image ls
+REPOSITORY                TAG                 IMAGE ID            
+friendlyhello             latest              c2e684e3c029    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;[참고] 프록시 서버 설정&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;해당 서버 앞에 프록시 서버가 설정된 경우 ENV 명령을 통해서 Dockerfile에 해당 프록시 설정 추가&lt;/li&gt;
+  &lt;li&gt;위에 Dockerfile에 EVN 설정 부분에 이어서 추가
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Set proxy server, replace host:port with values for your servers
+ENV http_proxy host:port
+ENV https_proxy host:port
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;앱 실행하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;&lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/run/&quot;&gt;docker run&lt;/a&gt; 명령을 통해 앱을 실행&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-p&lt;/code&gt;옵션을 통해 머신의 4000 포트와 컨테이너의 80 포트를 매핑&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -p 4000:80 friendlyhello # &amp;lt;host port&amp;gt;:&amp;lt;container port&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;파이썬의 해당 앱은 컨테이너 안에서 &lt;code class=&quot;highlighter-rouge&quot;&gt;http://0.0.0.0:80&lt;/code&gt;에서 서비스&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;http://localhost:4000&lt;/code&gt; URL로 컨테이너는 서비스하며 실제 80포트와의 매핑은 숨겨짐&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;CTRL+C&lt;/code&gt;로 종료&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;해당 페이지 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl http://localhost:4000
+&amp;lt;h3&amp;gt;Hello World!&amp;lt;/h3&amp;gt;&amp;lt;b&amp;gt;Hostname:&amp;lt;/b&amp;gt; 07e1a6d098ac&amp;lt;br/&amp;gt;&amp;lt;b&amp;gt;Visits:&amp;lt;/b&amp;gt; &amp;lt;i&amp;gt;cannot connect to Redis, counter disabled&amp;lt;/i&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;앱을 백그라운드로 실행&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-d&lt;/code&gt;옵션을 사용하면 detached mode로 데몬 상태로 실행&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -d -p 4000:80 friendlyhello
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;실행중인 컨테이너 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED
+07e1a6d098ac        friendlyhello       &quot;python app.py&quot;     About an hour ago
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;해당 컨테이너 정지&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;CONTAINER ID&lt;/code&gt;를 사용해서 &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/container_stop/&quot;&gt;docker container stop&lt;/a&gt; 으로 해당 프로세스를 정지&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container stop 07e1a6d098ac
+07e1a6d098ac
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2&gt;이미지 공유하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;생성한 이미지를 다른 곳에서 실행하기 위해 도커 레지스트리 사용&lt;/li&gt;
+  &lt;li&gt;도커 레지스트리는 리포지토리들의 집합&lt;/li&gt;
+  &lt;li&gt;리포지토리는 이미지들의 집합&lt;/li&gt;
+  &lt;li&gt;도커 레지스트리 이외에도 도커는 도커 허브를 제공&lt;/li&gt;
+  &lt;li&gt;도커 허브는 도커가 제공하는 공개된 이미지 저장소로 회원 가입으로 사용 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;도커 아이디로 로그인하기&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://cloud.docker.com&quot;&gt;https://cloud.docker.com&lt;/a&gt; 을 통해서 회원 가입 후에 해당 아이디를 통해 로컬 머신에서 공개된 레지스트리로 로그인&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker login
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3&gt;이미지 태그하기&lt;/h3&gt;
+
+&lt;p&gt;레지스트리에 리포지토리 형식 : &lt;code class=&quot;highlighter-rouge&quot;&gt;username/repository:tag&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker tag image username/repository:tag
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;사용 예시&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker tag friendlyhello john/get-started:part2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/image_ls/&quot;&gt;docker image ls&lt;/a&gt; 로 새롭게 태그된 이미지 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker image ls
+REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+friendlyhello             latest              c2e684e3c029        29 hours ago        151 MB
+john/get-started          part2               c2e684e3c029        29 hours ago        151 MB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3&gt;이미지 업로드하기&lt;/h3&gt;
+
+&lt;p&gt;리포지토리에 태그된 이미지를 업로드 : &lt;a href=&quot;https://cloud.docker.com&quot;&gt;Docker Hub&lt;/a&gt; 에서 확인 가능&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker push username/repository:tag
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3&gt;리모트 리포지토리 이미지로 실행하기&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker run&lt;/code&gt; 으로 app실행 시&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;로컬 머신에 해당 이미지가 없는 경우 도커는 리포지토리에서 pull &amp;amp; run&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -p 4000:80 username/repository:tag
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sat, 28 Apr 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>Docker install &amp; hello world</title>

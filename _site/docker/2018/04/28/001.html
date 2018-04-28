@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>도커를 이용한 간단한 앱 만들기 | imgithubpro</title>
+	<meta name="description" content="  Dockerfile을 사용하여 컨테이너를 정의하여 실행해보자.생성한 이미지들을 리모트 저장소에 저장하고, 해당 이미지를 사용한다.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="/docker/2018/04/28/001.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+
+	<!-- Google Analytics -->
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">imgithubpro</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			<li>
+				<a class="page-link" href="/categories/">
+					Categories
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
+			
+			
+			<!-- Social icons from Font Awesome, if enabled  -->
+			
+
+
+<li>
+	<a href="mailto:imgoooglepro@gmail.com" title="Email">
+		<i class="fa fa-fw fa-envelope"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/imgithubpro" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            <!-- Search bar -->
+            
+            <li>
+            <form action="/search.html" method="get">
+                <input type="text" id="search-box" name="query" placeholder="Search" class="">
+                <button type="submit" class="">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </form>
+            </li>
+            
+		</ul>
+	</nav>
+    
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">도커를 이용한 간단한 앱 만들기</h1>
+    
+    <p class="meta">
+      April 28, 2018
+      
+    </p>
+  </header>
+  <section class="post-content"><blockquote>
+  <p>Dockerfile을 사용하여 컨테이너를 정의하여 실행해보자.<br />생성한 이미지들을 리모트 저장소에 저장하고, 해당 이미지를 사용한다.</p>
+</blockquote>
+
+<p><br /></p>
+<h2>도커 파일을 이용한 컨테이너 정의</h2>
+
+<hr />
+<ul>
+  <li><code class="highlighter-rouge">Dockerfile</code>은 컨테이너의 환경 설정을 정의</li>
+  <li>디스크나 네트워크 인터페이스에 대한 접근을 가상화하여 환경 설정에 정의하여 시스템으로부터 분리</li>
+  <li>Dockerfile을 통해서 정의한 app은 어디서나 동일하게 실행 가능</li>
+</ul>
+
+<h3>도커파일 정의하기</h3>
+
+<ul>
+  <li>빈 디렉토리를 생성하여 그 안에 아래 3개의 파일들을 입력</li>
+</ul>
+
+<p>Dockerfile</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Use an official Python runtime as a parent image
+FROM python:2.7-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+ADD . /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME World
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
+</code></pre></div></div>
+
+<p>requirements.txt</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Flask
+Redis
+</code></pre></div></div>
+
+<p>app.py</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from flask import Flask
+from redis import Redis, RedisError
+import os
+import socket
+
+# Connect to Redis
+redis = Redis(host="redis", db=0, socket_connect_timeout=2, socket_timeout=2)
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    try:
+        visits = redis.incr("counter")
+    except RedisError:
+        visits = "&lt;i&gt;cannot connect to Redis, counter disabled&lt;/i&gt;"
+
+    html = "&lt;h3&gt;Hello {name}!&lt;/h3&gt;" \
+           "&lt;b&gt;Hostname:&lt;/b&gt; {hostname}&lt;br/&gt;" \
+           "&lt;b&gt;Visits:&lt;/b&gt; {visits}"
+    return html.format(name=os.getenv("NAME", "world"), hostname=socket.gethostname(), visits=visits)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80)
+</code></pre></div></div>
+
+<h2>앱 빌드하기</h2>
+
+<hr />
+<p>빌드를 위한 디렉토리 구조</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ls
+Dockerfile		app.py			requirements.txt
+</code></pre></div></div>
+<p><a href="https://docs.docker.com/engine/reference/commandline/build/">docker build</a> 명령을 통해  Dockerfile로부터 이미지를 빌드</p>
+<ul>
+  <li><code class="highlighter-rouge">-t</code>옵션을 사용해서 tag로 사용할 이름을 설정</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t friendlyhello .
+</code></pre></div></div>
+<p>생성된 이미지 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker image ls
+REPOSITORY                TAG                 IMAGE ID            
+friendlyhello             latest              c2e684e3c029    
+</code></pre></div></div>
+<p>[참고] 프록시 서버 설정</p>
+<ul>
+  <li>해당 서버 앞에 프록시 서버가 설정된 경우 ENV 명령을 통해서 Dockerfile에 해당 프록시 설정 추가</li>
+  <li>위에 Dockerfile에 EVN 설정 부분에 이어서 추가
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Set proxy server, replace host:port with values for your servers
+ENV http_proxy host:port
+ENV https_proxy host:port
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2>앱 실행하기</h2>
+
+<hr />
+<p><a href="https://docs.docker.com/engine/reference/commandline/run/">docker run</a> 명령을 통해 앱을 실행</p>
+<ul>
+  <li><code class="highlighter-rouge">-p</code>옵션을 통해 머신의 4000 포트와 컨테이너의 80 포트를 매핑</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -p 4000:80 friendlyhello # &lt;host port&gt;:&lt;container port&gt;
+</code></pre></div></div>
+<ul>
+  <li>파이썬의 해당 앱은 컨테이너 안에서 <code class="highlighter-rouge">http://0.0.0.0:80</code>에서 서비스</li>
+  <li><code class="highlighter-rouge">http://localhost:4000</code> URL로 컨테이너는 서비스하며 실제 80포트와의 매핑은 숨겨짐</li>
+  <li><code class="highlighter-rouge">CTRL+C</code>로 종료</li>
+</ul>
+
+<p>해당 페이지 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl http://localhost:4000
+&lt;h3&gt;Hello World!&lt;/h3&gt;&lt;b&gt;Hostname:&lt;/b&gt; 07e1a6d098ac&lt;br/&gt;&lt;b&gt;Visits:&lt;/b&gt; &lt;i&gt;cannot connect to Redis, counter disabled&lt;/i&gt;
+</code></pre></div></div>
+<p>앱을 백그라운드로 실행</p>
+<ul>
+  <li><code class="highlighter-rouge">-d</code>옵션을 사용하면 detached mode로 데몬 상태로 실행</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d -p 4000:80 friendlyhello
+</code></pre></div></div>
+<p>실행중인 컨테이너 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED
+07e1a6d098ac        friendlyhello       "python app.py"     About an hour ago
+</code></pre></div></div>
+<p>해당 컨테이너 정지</p>
+<ul>
+  <li><code class="highlighter-rouge">CONTAINER ID</code>를 사용해서 <a href="https://docs.docker.com/engine/reference/commandline/container_stop/">docker container stop</a> 으로 해당 프로세스를 정지</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker container stop 07e1a6d098ac
+07e1a6d098ac
+</code></pre></div></div>
+
+<h2>이미지 공유하기</h2>
+
+<hr />
+
+<ul>
+  <li>생성한 이미지를 다른 곳에서 실행하기 위해 도커 레지스트리 사용</li>
+  <li>도커 레지스트리는 리포지토리들의 집합</li>
+  <li>리포지토리는 이미지들의 집합</li>
+  <li>도커 레지스트리 이외에도 도커는 도커 허브를 제공</li>
+  <li>도커 허브는 도커가 제공하는 공개된 이미지 저장소로 회원 가입으로 사용 가능</li>
+</ul>
+
+<h3>도커 아이디로 로그인하기</h3>
+
+<p><a href="https://cloud.docker.com">https://cloud.docker.com</a> 을 통해서 회원 가입 후에 해당 아이디를 통해 로컬 머신에서 공개된 레지스트리로 로그인</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker login
+</code></pre></div></div>
+
+<h3>이미지 태그하기</h3>
+
+<p>레지스트리에 리포지토리 형식 : <code class="highlighter-rouge">username/repository:tag</code></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker tag image username/repository:tag
+</code></pre></div></div>
+
+<p>사용 예시</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker tag friendlyhello john/get-started:part2
+</code></pre></div></div>
+
+<p><a href="https://docs.docker.com/engine/reference/commandline/image_ls/">docker image ls</a> 로 새롭게 태그된 이미지 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker image ls
+REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+friendlyhello             latest              c2e684e3c029        29 hours ago        151 MB
+john/get-started          part2               c2e684e3c029        29 hours ago        151 MB
+</code></pre></div></div>
+
+<h3>이미지 업로드하기</h3>
+
+<p>리포지토리에 태그된 이미지를 업로드 : <a href="https://cloud.docker.com">Docker Hub</a> 에서 확인 가능</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker push username/repository:tag
+</code></pre></div></div>
+
+<h3>리모트 리포지토리 이미지로 실행하기</h3>
+
+<p><code class="highlighter-rouge">docker run</code> 으로 app실행 시</p>
+<ul>
+  <li>로컬 머신에 해당 이미지가 없는 경우 도커는 리포지토리에서 pull &amp; run</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -p 4000:80 username/repository:tag
+</code></pre></div></div>
+</section>
+  
+<footer>
+  <div class="tags">
+    
+    <a class="tag" href="/tags#docker">#docker</a>
+    
+    <a class="tag" href="/tags#devops">#devops</a>
+    
+  </div>
+</footer>
+
+
+</article>
+
+<!-- Disqus -->
+
+
+<!-- Post navigation -->
+
+
+    </div>
+    
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/rohanchandra/type-theme">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>
