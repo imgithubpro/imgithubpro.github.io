@@ -5,7 +5,48 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Sun, 29 Apr 2018 15:03:20 +0900</pubDate>
+    <pubDate>Sun, 29 Apr 2018 20:39:15 +0900</pubDate>
+    
+      <item>
+        <title>VirtualBox 설치하기</title>
+        <link>/etc/2018/04/29/002.html</link>
+        <guid isPermaLink="true">/etc/2018/04/29/002.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;CentOS 7 에 VirtualBox 설치해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;VirtualBox repo 추가&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cd /etc/yum.repos.d/
+$ sudo wget http://download.virtualbox.org/virtualbox/rpm/el/virtualbox.repo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;proxy가 있는 경우 : &lt;code class=&quot;highlighter-rouge&quot;&gt;-e use_proxy=yes -e http_proxy=http://proxy.yourhost:port&lt;/code&gt; 추가&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo yum repolist
+$ yum list VirtualBox*
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;원하는 VirtualBox 버전 선택&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt; VirtualBox install&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo yum install VirtualBox-5.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;yum proxy 설정 : &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/yum.conf&lt;/code&gt;에 &lt;code class=&quot;highlighter-rouge&quot;&gt;proxy=http://proxy.yourhost:port&lt;/code&gt; 추가&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;[참고] 의존성 라이브러리 rpm으로 직접 설치&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rpm -ivh 패키지명
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Sun, 29 Apr 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>도커 서비스 구성하기</title>

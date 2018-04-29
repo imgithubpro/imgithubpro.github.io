@@ -173,6 +173,17 @@
 <script>
   window.store = {
     
+      "etc-2018-04-29-002-html": {
+        "title": "VirtualBox 설치하기",
+        "tags": "centos, virtualbox, install",
+        "date": "April 29, 2018",
+        "author": "",
+        "category": "",
+        "content": "  CentOS 7 에 VirtualBox 설치해보자.VirtualBox repo 추가$ cd /etc/yum.repos.d/$ sudo wget http://download.virtualbox.org/virtualbox/rpm/el/virtualbox.repo  proxy가 있는 경우 : -e use_proxy=yes -e http_proxy=http://proxy.yourhost:port 추가$ sudo yum repolist$ yum list VirtualBox*  원하는 VirtualBox 버전 선택 VirtualBox install$ sudo yum install VirtualBox-5.0  yum proxy 설정 : /etc/yum.conf에 proxy=http://proxy.yourhost:port 추가[참고] 의존성 라이브러리 rpm으로 직접 설치$ rpm -ivh 패키지명",
+        "url": "//etc/2018/04/29/002.html"
+      }
+      ,
+    
       "docker-2018-04-29-001-html": {
         "title": "도커 서비스 구성하기",
         "tags": "docker, devops, service, compose",
