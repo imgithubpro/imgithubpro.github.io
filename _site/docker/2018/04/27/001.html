@@ -2,7 +2,7 @@
 <html class="no-js">
   <head>
 	<meta charset="utf-8">
-	<title>Docker install & hello world | imgithubpro</title>
+	<title>도커 설치 & hello world | imgithubpro</title>
 	<meta name="description" content="  CentOS 7 기준으로 도커를 설치하고, 간단한 hello-world 예제 실행해보자.">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -159,7 +159,7 @@
     <div class="content">
       <article >
   <header style="background-image: url('/')">
-    <h1 class="title">Docker install & hello world</h1>
+    <h1 class="title">도커 설치 & hello world</h1>
     
     <p class="meta">
       April 27, 2018
@@ -172,6 +172,7 @@
 
 <p><br /></p>
 <h2>도커란 무엇인가</h2>
+
 <hr />
 <p>컨테이너 기반으로 애플리케이션을 개발, 배포, 실행할 수 있게 해주는 플랫폼</p>
 <h3>이미지와 컨테이너</h3>
@@ -190,7 +191,6 @@
 </ul>
 
 <h3>컨테이너와 가상머신</h3>
-<hr />
 <h4>컨테이너</h4>
 <ul>
   <li>리눅스에서 호스트 머신의 커널을 다른 컨테이너들과 공유하며 네이티브로 실행</li>
@@ -207,7 +207,9 @@
 <p><img src="/assets/img/post/container.png" width="300" />
 <img src="/assets/img/post/vm.png" width="300" /></p>
 
+<p><br /></p>
 <h2>설치하기</h2>
+
 <hr />
 <p>os 확인</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grep . /etc/*-release
@@ -226,7 +228,10 @@ $ sudo gpasswd -a ${USER} docker
 $ sudo service docker restart
 </code></pre></div></div>
 
+<p><br /></p>
 <h2>hello-world</h2>
+
+<hr />
 <p>이미지 리스트</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker image ls
 REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
@@ -245,6 +250,30 @@ docker.io/hello-world   latest              e38bc07ac18e        2 weeks ago     
 </code></pre></div></div>
 <p>컨테이너 리스트</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker container ls # --all or -aq
+</code></pre></div></div>
+<p><br /></p>
+<h2>사용한 명령어 정리</h2>
+
+<hr />
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## List Docker CLI commands
+docker
+docker container --help
+
+## Display Docker version and info
+docker --version
+docker version
+docker info
+
+## Execute Docker image
+docker run hello-world
+
+## List Docker images
+docker image ls
+
+## List Docker containers (running, all, all in quiet mode)
+docker container ls
+docker container ls --all
+docker container ls -aq
 </code></pre></div></div>
 <p><br /></p>
 <hr />

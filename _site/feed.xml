@@ -5,7 +5,146 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Sat, 28 Apr 2018 20:58:26 +0900</pubDate>
+    <pubDate>Sun, 29 Apr 2018 15:03:20 +0900</pubDate>
+    
+      <item>
+        <title>도커 서비스 구성하기</title>
+        <link>/docker/2018/04/29/001.html</link>
+        <guid isPermaLink="true">/docker/2018/04/29/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;docker-compose.yml 을 사용하여 도커 서비스를 구성하고 실행해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;도커의 서비스란?&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;ul&gt;
+  &lt;li&gt;“프로덕션 컨테이너”로 실제 서비스의 기능 블럭&lt;/li&gt;
+  &lt;li&gt;어떤 포트들을 사용해야 하는지 얼마나 많은 컨테이 복제본들을 실행해야 하는지 정의&lt;/li&gt;
+  &lt;li&gt;서비스 확장 시, 프로세스의 서비스는 해당 소프트웨어를 실행하는 컨테이너 인스턴스의 수 증가&lt;/li&gt;
+  &lt;li&gt;도커는 서비스 확장과 실행을 위해 &lt;code class=&quot;highlighter-rouge&quot;&gt;docker-compose.yml&lt;/code&gt; 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;docker-compose.yml 파일 작성하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;h3&gt;docker-compose 설치&lt;/h3&gt;
+
+&lt;p&gt;Linux 기준 Compose 설치&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;proxy를 사용하는 경우: -x http://proxy.yourhost:port 를 추가&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+$ sudo chmod +x /usr/local/bin/docker-compose
+$ docker-compose --version # test
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3&gt;docker-compose.yml&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker-compose.yml&lt;/code&gt;파일은 도커 컨테이너들이 서비스에서 어떻게 작동하는지 정의하는 YAML 파일&lt;/li&gt;
+  &lt;li&gt;앞에서 만들었던 &lt;a href=&quot;https://imgithubpro.github.io/docker/2018/04/28/001.html&quot;&gt;username/repo:tag&lt;/a&gt; 이미지를 사용해서 실습
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;version: &quot;3&quot;
+services:
+web:
+  # replace username/repo:tag with your name and image details
+  image: username/repo:tag
+  deploy:
+    replicas: 5
+    resources:
+      limits:
+        cpus: &quot;0.1&quot; # 10% of the CPU
+        memory: 50M
+    restart_policy:
+      condition: on-failure
+  ports:
+    - &quot;80:80&quot;
+  networks:
+    - webnet
+networks:
+webnet:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;새로운 로드밸런스된 앱을 실행하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker stack deploy&lt;/code&gt; 명령얼 사용하기 전에 아래 명령 수행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker swarm init
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;getstartedlab&lt;/code&gt; 이라는 이름으로 앱을 실행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker statck deploy -c docker-compose.yml getstartedlab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;우리가 설정가 앱은 각 호스트당 배포된 이미지가 5개의 컨테이너 인스턴스로 실행되는 싱글 서비스 스택으로 구성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;서비스 아이디 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker service ls
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;web&lt;/code&gt; 서비스의 결과를 확인해보면 서비스의 이름은 &lt;code class=&quot;highlighter-rouge&quot;&gt;getstartedlab_web&lt;/code&gt;으로 출력&lt;/li&gt;
+  &lt;li&gt;서비스에서 실행되는 각 단일 컨테이너가 테스크&lt;/li&gt;
+  &lt;li&gt;테스크는 &lt;code class=&quot;highlighter-rouge&quot;&gt;docker-compose.yml&lt;/code&gt;파일에 정의한 &lt;code class=&quot;highlighter-rouge&quot;&gt;replicas&lt;/code&gt; 갯수만큼 순차적으로 증가하는 유니크한 아이디를 가짐&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;해당 서비스의 테스크 아이디 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker service ps getstartedlab_web
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;필터 없이 모든 서비스 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container ls -q
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;인스턴스 결과 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -4 http://localhost
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;컨테이너는 각 요청마다 라운드로빈 방식으로 선택&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;앱 스케일 수정&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker-compose.yml&lt;/code&gt; 파일의 &lt;code class=&quot;highlighter-rouge&quot;&gt;replicas&lt;/code&gt;를 수정 후에 &lt;code class=&quot;highlighter-rouge&quot;&gt;docker statck deploy&lt;/code&gt; 명령으로 다시 실행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker stack deploy -c docker-compose.yml getstartedlab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;도커는 해당 스택을 다운시키거나 킬 시킬필요 없이 업데이트&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;앱 종료&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker stack rm&lt;/code&gt;명령으로 앱 다운&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker stack rm getstartedlab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;swarm 다운&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker swarm leave --force
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;사용한 명령어 정리&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker stack ls                                            # List stacks or apps
+docker stack deploy -c &amp;lt;composefile&amp;gt; &amp;lt;appname&amp;gt;  # Run the specified Compose file
+docker service ls                 # List running services associated with an app
+docker service ps &amp;lt;service&amp;gt;                  # List tasks associated with an app
+docker inspect &amp;lt;task or container&amp;gt;                   # Inspect task or container
+docker container ls -q                                      # List container IDs
+docker stack rm &amp;lt;appname&amp;gt;                             # Tear down an application
+docker swarm leave --force      # Take down a single node swarm from the manager
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 29 Apr 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>도커를 이용한 간단한 앱 만들기</title>
@@ -85,7 +224,7 @@ def hello():
 if __name__ == &quot;__main__&quot;:
     app.run(host='0.0.0.0', port=80)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;h2&gt;앱 빌드하기&lt;/h2&gt;
 
 &lt;hr /&gt;
@@ -113,9 +252,9 @@ friendlyhello             latest              c2e684e3c029
 ENV http_proxy host:port
 ENV https_proxy host:port
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
-
 &lt;h2&gt;앱 실행하기&lt;/h2&gt;
 
 &lt;hr /&gt;
@@ -156,7 +295,7 @@ CONTAINER ID        IMAGE               COMMAND             CREATED
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container stop 07e1a6d098ac
 07e1a6d098ac
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;h2&gt;이미지 공유하기&lt;/h2&gt;
 
 &lt;hr /&gt;
@@ -201,19 +340,41 @@ john/get-started          part2               c2e684e3c029        29 hours ago  
 
 &lt;h3&gt;리모트 리포지토리 이미지로 실행하기&lt;/h3&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker run&lt;/code&gt; 으로 app실행 시&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker run&lt;/code&gt; 으로 앱 실행 시&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;로컬 머신에 해당 이미지가 없는 경우 도커는 리포지토리에서 pull &amp;amp; run&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -p 4000:80 username/repository:tag
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;사용한 명령어 정리&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker build -t friendlyhello .  # Create image using this directory's Dockerfile
+docker run -p 4000:80 friendlyhello  # Run &quot;friendlyname&quot; mapping port 4000 to 80
+docker run -d -p 4000:80 friendlyhello         # Same thing, but in detached mode
+docker container ls                                # List all running containers
+docker container ls -a             # List all containers, even those not running
+docker container stop &amp;lt;hash&amp;gt;           # Gracefully stop the specified container
+docker container kill &amp;lt;hash&amp;gt;         # Force shutdown of the specified container
+docker container rm &amp;lt;hash&amp;gt;        # Remove specified container from this machine
+docker container rm $(docker container ls -a -q)         # Remove all containers
+docker image ls -a                             # List all images on this machine
+docker image rm &amp;lt;image id&amp;gt;            # Remove specified image from this machine
+docker image rm $(docker image ls -a -q)   # Remove all images from this machine
+docker login             # Log in this CLI session using your Docker credentials
+docker tag &amp;lt;image&amp;gt; username/repository:tag  # Tag &amp;lt;image&amp;gt; for upload to registry
+docker push username/repository:tag            # Upload tagged image to registry
+docker run username/repository:tag                   # Run image from a registry
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Sat, 28 Apr 2018 00:00:00 +0900</pubDate>
       </item>
     
       <item>
-        <title>Docker install &amp; hello world</title>
+        <title>도커 설치 &amp; hello world</title>
         <link>/docker/2018/04/27/001.html</link>
         <guid isPermaLink="true">/docker/2018/04/27/001.html</guid>
         <description>&lt;blockquote&gt;
@@ -222,6 +383,7 @@ john/get-started          part2               c2e684e3c029        29 hours ago  
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;h2&gt;도커란 무엇인가&lt;/h2&gt;
+
 &lt;hr /&gt;
 &lt;p&gt;컨테이너 기반으로 애플리케이션을 개발, 배포, 실행할 수 있게 해주는 플랫폼&lt;/p&gt;
 &lt;h3&gt;이미지와 컨테이너&lt;/h3&gt;
@@ -240,7 +402,6 @@ john/get-started          part2               c2e684e3c029        29 hours ago  
 &lt;/ul&gt;
 
 &lt;h3&gt;컨테이너와 가상머신&lt;/h3&gt;
-&lt;hr /&gt;
 &lt;h4&gt;컨테이너&lt;/h4&gt;
 &lt;ul&gt;
   &lt;li&gt;리눅스에서 호스트 머신의 커널을 다른 컨테이너들과 공유하며 네이티브로 실행&lt;/li&gt;
@@ -257,7 +418,9 @@ john/get-started          part2               c2e684e3c029        29 hours ago  
 &lt;p&gt;&lt;img src=&quot;/assets/img/post/container.png&quot; width=&quot;300&quot; /&gt;
 &lt;img src=&quot;/assets/img/post/vm.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;h2&gt;설치하기&lt;/h2&gt;
+
 &lt;hr /&gt;
 &lt;p&gt;os 확인&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ grep . /etc/*-release
@@ -276,7 +439,10 @@ $ sudo gpasswd -a ${USER} docker
 $ sudo service docker restart
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;h2&gt;hello-world&lt;/h2&gt;
+
+&lt;hr /&gt;
 &lt;p&gt;이미지 리스트&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker image ls
 REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
@@ -295,6 +461,30 @@ docker.io/hello-world   latest              e38bc07ac18e        2 weeks ago     
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;컨테이너 리스트&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ docker container ls # --all or -aq
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;사용한 명령어 정리&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;## List Docker CLI commands
+docker
+docker container --help
+
+## Display Docker version and info
+docker --version
+docker version
+docker info
+
+## Execute Docker image
+docker run hello-world
+
+## List Docker images
+docker image ls
+
+## List Docker containers (running, all, all in quiet mode)
+docker container ls
+docker container ls --all
+docker container ls -aq
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;hr /&gt;

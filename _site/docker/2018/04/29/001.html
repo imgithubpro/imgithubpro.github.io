@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>도커 서비스 구성하기 | imgithubpro</title>
+	<meta name="description" content="  docker-compose.yml 을 사용하여 도커 서비스를 구성하고 실행해보자.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="/docker/2018/04/29/001.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+
+	<!-- Google Analytics -->
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">imgithubpro</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			<li>
+				<a class="page-link" href="/categories/">
+					Categories
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
+			
+			
+			<!-- Social icons from Font Awesome, if enabled  -->
+			
+
+
+<li>
+	<a href="mailto:imgoooglepro@gmail.com" title="Email">
+		<i class="fa fa-fw fa-envelope"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/imgithubpro" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            <!-- Search bar -->
+            
+            <li>
+            <form action="/search.html" method="get">
+                <input type="text" id="search-box" name="query" placeholder="Search" class="">
+                <button type="submit" class="">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </form>
+            </li>
+            
+		</ul>
+	</nav>
+    
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">도커 서비스 구성하기</h1>
+    
+    <p class="meta">
+      April 29, 2018
+      
+    </p>
+  </header>
+  <section class="post-content"><blockquote>
+  <p>docker-compose.yml 을 사용하여 도커 서비스를 구성하고 실행해보자.</p>
+</blockquote>
+
+<p><br /></p>
+<h2>도커의 서비스란?</h2>
+
+<hr />
+<ul>
+  <li>“프로덕션 컨테이너”로 실제 서비스의 기능 블럭</li>
+  <li>어떤 포트들을 사용해야 하는지 얼마나 많은 컨테이 복제본들을 실행해야 하는지 정의</li>
+  <li>서비스 확장 시, 프로세스의 서비스는 해당 소프트웨어를 실행하는 컨테이너 인스턴스의 수 증가</li>
+  <li>도커는 서비스 확장과 실행을 위해 <code class="highlighter-rouge">docker-compose.yml</code> 사용</li>
+</ul>
+
+<p><br /></p>
+<h2>docker-compose.yml 파일 작성하기</h2>
+
+<hr />
+<h3>docker-compose 설치</h3>
+
+<p>Linux 기준 Compose 설치</p>
+<ul>
+  <li>proxy를 사용하는 경우: -x http://proxy.yourhost:port 를 추가</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+$ sudo chmod +x /usr/local/bin/docker-compose
+$ docker-compose --version # test
+</code></pre></div></div>
+<h3>docker-compose.yml</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">docker-compose.yml</code>파일은 도커 컨테이너들이 서비스에서 어떻게 작동하는지 정의하는 YAML 파일</li>
+  <li>앞에서 만들었던 <a href="https://imgithubpro.github.io/docker/2018/04/28/001.html">username/repo:tag</a> 이미지를 사용해서 실습
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version: "3"
+services:
+web:
+  # replace username/repo:tag with your name and image details
+  image: username/repo:tag
+  deploy:
+    replicas: 5
+    resources:
+      limits:
+        cpus: "0.1" # 10% of the CPU
+        memory: 50M
+    restart_policy:
+      condition: on-failure
+  ports:
+    - "80:80"
+  networks:
+    - webnet
+networks:
+webnet:
+</code></pre></div>    </div>
+    <p><br /></p>
+  </li>
+</ul>
+<h2>새로운 로드밸런스된 앱을 실행하기</h2>
+
+<hr />
+<p><code class="highlighter-rouge">docker stack deploy</code> 명령얼 사용하기 전에 아래 명령 수행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker swarm init
+</code></pre></div></div>
+<p><code class="highlighter-rouge">getstartedlab</code> 이라는 이름으로 앱을 실행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker statck deploy -c docker-compose.yml getstartedlab
+</code></pre></div></div>
+<ul>
+  <li>우리가 설정가 앱은 각 호스트당 배포된 이미지가 5개의 컨테이너 인스턴스로 실행되는 싱글 서비스 스택으로 구성</li>
+</ul>
+
+<p>서비스 아이디 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker service ls
+</code></pre></div></div>
+<ul>
+  <li><code class="highlighter-rouge">web</code> 서비스의 결과를 확인해보면 서비스의 이름은 <code class="highlighter-rouge">getstartedlab_web</code>으로 출력</li>
+  <li>서비스에서 실행되는 각 단일 컨테이너가 테스크</li>
+  <li>테스크는 <code class="highlighter-rouge">docker-compose.yml</code>파일에 정의한 <code class="highlighter-rouge">replicas</code> 갯수만큼 순차적으로 증가하는 유니크한 아이디를 가짐</li>
+</ul>
+
+<p>해당 서비스의 테스크 아이디 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker service ps getstartedlab_web
+</code></pre></div></div>
+<p>필터 없이 모든 서비스 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker container ls -q
+</code></pre></div></div>
+<p>인스턴스 결과 확인</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -4 http://localhost
+</code></pre></div></div>
+<ul>
+  <li>컨테이너는 각 요청마다 라운드로빈 방식으로 선택</li>
+</ul>
+
+<p><br /></p>
+<h2>앱 스케일 수정</h2>
+
+<hr />
+<p><code class="highlighter-rouge">docker-compose.yml</code> 파일의 <code class="highlighter-rouge">replicas</code>를 수정 후에 <code class="highlighter-rouge">docker statck deploy</code> 명령으로 다시 실행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker stack deploy -c docker-compose.yml getstartedlab
+</code></pre></div></div>
+<ul>
+  <li>도커는 해당 스택을 다운시키거나 킬 시킬필요 없이 업데이트</li>
+</ul>
+
+<p><br /></p>
+<h2>앱 종료</h2>
+
+<hr />
+
+<p><code class="highlighter-rouge">docker stack rm</code>명령으로 앱 다운</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker stack rm getstartedlab
+</code></pre></div></div>
+
+<p>swarm 다운</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker swarm leave --force
+</code></pre></div></div>
+
+<p><br /></p>
+<h2>사용한 명령어 정리</h2>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker stack ls                                            # List stacks or apps
+docker stack deploy -c &lt;composefile&gt; &lt;appname&gt;  # Run the specified Compose file
+docker service ls                 # List running services associated with an app
+docker service ps &lt;service&gt;                  # List tasks associated with an app
+docker inspect &lt;task or container&gt;                   # Inspect task or container
+docker container ls -q                                      # List container IDs
+docker stack rm &lt;appname&gt;                             # Tear down an application
+docker swarm leave --force      # Take down a single node swarm from the manager
+</code></pre></div></div>
+</section>
+  
+<footer>
+  <div class="tags">
+    
+    <a class="tag" href="/tags#docker">#docker</a>
+    
+    <a class="tag" href="/tags#devops">#devops</a>
+    
+    <a class="tag" href="/tags#service">#service</a>
+    
+    <a class="tag" href="/tags#compose">#compose</a>
+    
+  </div>
+</footer>
+
+
+</article>
+
+<!-- Disqus -->
+
+
+<!-- Post navigation -->
+
+
+    </div>
+    
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/rohanchandra/type-theme">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>
