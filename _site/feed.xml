@@ -5,7 +5,353 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Tue, 01 May 2018 16:05:03 +0900</pubDate>
+    <pubDate>Wed, 02 May 2018 02:12:42 +0900</pubDate>
+    
+      <item>
+        <title>Elasticsearch REST API 시작하기</title>
+        <link>/elastic/2018/05/02/001.html</link>
+        <guid isPermaLink="true">/elastic/2018/05/02/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;REST API를 사용하여 Elasticsearch의 각 기능을 살펴본다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;클러스터 API&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;curl&lt;/code&gt;을 사용해서 테스트 
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;클러스터 상태&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/_cat/health?v&quot;
+epoch      timestamp cluster       status node.total node.data shards pri relo init unassign pending_tasks max_task_wait_time active_shards_percent
+1525159681 16:28:01  elasticsearch green           1         1      0   0    0    0        0             0                  -                100.0%
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;status : 클러스터의 상태 값은 녹색/노란색/빨간색 중 하나
+    &lt;ul&gt;
+      &lt;li&gt;green : 클러스터 정상 작동&lt;/li&gt;
+      &lt;li&gt;yellow : 모든 데이터가 사용 가능한 상태이지만 일부 리플리카가 아직 배정되지 않은 상태(클러스터는 정상 작동 중)&lt;/li&gt;
+      &lt;li&gt;red : 어떤 이유로 일부 데이터가 사용할 수 없는 상태&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;클러스터 노드 목록&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/_cat/nodes?v&quot;
+ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role master name
+127.0.0.1           12          97   1    0.14    0.08     0.11 mdi       *      FxRG3ga
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;인덱스 확인&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/_cat/indices?v&quot;
+health status index uuid pri rep docs.count docs.deleted store.size pri.store.size
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;아직 클러스터에 인덱스가 없는 경우&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;인덱스 생성&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer?pretty&quot;
+{
+	&quot;acknowledged&quot; : true,
+	&quot;shards_acknowledged&quot; : true
+}
+$ curl -X GET &quot;localhost:9200/_cat/indices?v&quot;
+health status index    uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+yellow open   customer TStBp1JvQ3ii3xvAZmRAlw   5   1          0            0       650b           650b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;PUT을 통해 “customer”라는 인덱스 생성&lt;/li&gt;
+  &lt;li&gt;마지막 &lt;code class=&quot;highlighter-rouge&quot;&gt;pretty&lt;/code&gt;를 추가할 경우, JSON응답이 있다면 pretty-print 수행&lt;/li&gt;
+  &lt;li&gt;두 번째 명령의 결과를 보면 customer라는 인덱스 1개가 있고 이 인덱스는 기본 샤드 5개, 리플리카 1개로 포함된 다큐먼트는 0개&lt;/li&gt;
+  &lt;li&gt;customer 인덱스는 노란색 상태 태그로 표시
+    &lt;ul&gt;
+      &lt;li&gt;Elasticsearch에서는 기본적으로 인덱스에 대해 리플리카를 1개 생성&lt;/li&gt;
+      &lt;li&gt;이 리플리카가 하나의 노드에서 실행 중이므로 고가용성을 위해 배정될 수 없음&lt;/li&gt;
+      &lt;li&gt;나중에 이 리플리카가 두 번째 노드에 배정 시 녹색으로 변경&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;다큐먼트 인덱싱 및 쿼리&lt;/h3&gt;
+
+&lt;p&gt;Elasticsearch에서 데이터에 액세스하는 패턴&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;REST Verb&amp;gt; /&amp;lt;Index&amp;gt;/&amp;lt;Type&amp;gt;/&amp;lt;ID&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;다큐먼트 추가&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
+&amp;gt;      -H &quot;Content-Type:application/json&quot;\
+&amp;gt;      -d '{&quot;name&quot;:&quot;John Doe&quot;}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 1,
+  &quot;result&quot; : &quot;created&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  },
+  &quot;created&quot; : true
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;customer 색인 및 external 타입에 새 고객 문서가 생성&lt;/li&gt;
+  &lt;li&gt;Elasticsearch는 문서를 인덱싱하기 전에 명시적으로 인덱스를 생성할 필요가 없음&lt;/li&gt;
+  &lt;li&gt;앞의 예에서 customer 인덱스가 없으면 자동으로 생성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;방금 인덱싱한 문서 검색&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/customer/external/1?pretty&quot;
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 1,
+  &quot;found&quot; : true,
+  &quot;_source&quot; : {
+    &quot;name&quot; : &quot;John Doe&quot;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;found&lt;/code&gt; : 요청된 ID 1에 해당하는 문서를 찾았다고 알려줌&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;_source&lt;/code&gt; : JSON 문서 전체를 반환&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;인덱스 삭제&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X DELETE &quot;localhost:9200/customer?pretty&quot;
+{
+  &quot;acknowledged&quot; : true
+}
+$ curl -X GET &quot;localhost:9200/_cat/indices?v&quot;
+health status index uuid pri rep docs.count docs.deleted store.size pri.store.size
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;데이터 수정&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;데이터는 인덱싱/업데이트/삭제하는 시점부터 검색 결과에 나타나는 시점까지 1초 정도 소요(새로고침 간격)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;문서 인덱싱/대체&lt;/h3&gt;
+
+&lt;p&gt;앞서 단일 문서 인덱싱 예제를 다시 실행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
+&amp;gt;       -H &quot;Content-Type:application/json&quot;\
+&amp;gt;       -d '{&quot;name&quot;:&quot;John Doe&quot;}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 1,
+  &quot;result&quot; : &quot;created&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  },
+  &quot;created&quot; : true
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;문서의 내용을 바꿔서 동일하게 다시 실행&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
+&amp;gt;          -H &quot;Content-Type:application/json&quot;\
+&amp;gt;          -d '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 2,
+  &quot;result&quot; : &quot;updated&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  },
+  &quot;created&quot; : false
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;ID가 1인 문서의 name이 “John doe”에서 “Jane Doe”로 바뀜&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;ID없이 인덱싱하는 경우&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external?pretty&quot;\
+&amp;gt;          -H &quot;Content-Type:application/json&quot;\
+&amp;gt;          -d '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;AWMb2NtytvPg5vPfDWWF&quot;,
+  &quot;_version&quot; : 1,
+  &quot;result&quot; : &quot;created&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  },
+  &quot;created&quot; : true
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;ID를 지정하지 않으면 PUT대신 POST 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;문서 업데이트&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;문서를 업데이트하면 기존 문서가 삭제되고 새 문서를 인덱싱한 후 여기에 업데이트 적용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/1/_update?pretty&quot;\
+&amp;gt;          -H &quot;Content-Type:application/json&quot;\
+&amp;gt;          -d '{&quot;doc&quot;:{&quot;name&quot;:&quot;Jane Doe&quot;, &quot;age&quot;:20}}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 3,
+  &quot;result&quot; : &quot;updated&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;스크립트를 통한 업데이트&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/1/_update?pretty&quot;\
+&amp;gt;          -H &quot;Content-Type:application/json&quot;\
+&amp;gt;          -d '{&quot;script&quot; : &quot;ctx._source.age += 5&quot;}'
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 4,
+  &quot;result&quot; : &quot;updated&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  }
+}
+$ curl -X GET &quot;localhost:9200/customer/external/1?pretty&quot;
+{
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 4,
+  &quot;found&quot; : true,
+  &quot;_source&quot; : {
+    &quot;name&quot; : &quot;Jane Doe&quot;,
+    &quot;age&quot; : 25
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ctx._source&lt;/code&gt;는 업데이트하려는 현재 소스 문서&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;문서 삭제&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X DELETE &quot;localhost:9200/customer/external/1?pretty&quot;
+{
+  &quot;found&quot; : true,
+  &quot;_index&quot; : &quot;customer&quot;,
+  &quot;_type&quot; : &quot;external&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 5,
+  &quot;result&quot; : &quot;deleted&quot;,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 2,
+    &quot;successful&quot; : 1,
+    &quot;failed&quot; : 0
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;배치 처리&lt;/h3&gt;
+
+&lt;p&gt;간단한 예로 하나의 벌크 호출로 문서 2개를 인덱싱&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/_bulk?pretty&quot;\
+&amp;gt;  -d '{&quot;index&quot;:{&quot;_id&quot;:&quot;1&quot;}}
+&amp;gt; {&quot;name&quot;:&quot;John Doe&quot;}
+&amp;gt; {&quot;index&quot;:{&quot;_id&quot;:&quot;2&quot;}}
+&amp;gt; {&quot;name&quot;:&quot;Jane Doe&quot;}'
+{
+  &quot;took&quot; : 99,
+  &quot;errors&quot; : false,
+  &quot;items&quot; : [
+    {
+      &quot;index&quot; : {
+        &quot;_index&quot; : &quot;customer&quot;,
+        &quot;_type&quot; : &quot;external&quot;,
+        &quot;_id&quot; : &quot;1&quot;,
+        &quot;_version&quot; : 1,
+        &quot;result&quot; : &quot;created&quot;,
+        &quot;_shards&quot; : {
+          &quot;total&quot; : 2,
+          &quot;successful&quot; : 1,
+          &quot;failed&quot; : 0
+        },
+        &quot;created&quot; : true,
+        &quot;status&quot; : 201
+      }
+    }
+  ]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;$ curl -X POST “localhost:9200/customer/external/_bulk?pretty”\&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;-d ‘{“update”:{“_id”:”1”}}
+{“doc”: { “name”: “John Doe becomes Jane Doe” } }
+{“delete”:{“_id”:”2”}}’
+{
+  “took” : 26,
+  “errors” : false,
+  “items” : [
+    {
+      “update” : {
+        “_index” : “customer”,
+        “_type” : “external”,
+        “_id” : “1”,
+        “_version” : 2,
+        “result” : “updated”,
+        “_shards” : {
+          “total” : 2,
+          “successful” : 1,
+          “failed” : 0
+        },
+        “status” : 200
+      }
+    }
+  ]
+}
+```&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 02 May 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>Elasticsearch 시작하기</title>
@@ -38,11 +384,13 @@
 &lt;p&gt;인덱스&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;단일 클러스터에 원하는 개수의 인덱스 정의 가능&lt;/li&gt;
+  &lt;li&gt;RDB에 database에 해당&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;타입&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;하나의 인덱스에서 하나 이상의 타입 정의 가능&lt;/li&gt;
+  &lt;li&gt;RDB에 table에 해당&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;도큐먼트&lt;/p&gt;
@@ -50,6 +398,7 @@
   &lt;li&gt;도큐먼트는 인덱싱할 수 있는 기본 정보 단위&lt;/li&gt;
   &lt;li&gt;JSON형태&lt;/li&gt;
   &lt;li&gt;하나의 인덱스/타입에 원하는 개수의 도큐먼트 저장 가능&lt;/li&gt;
+  &lt;li&gt;RDB에 row에 해당&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;샤드 &amp;amp; 리플리카&lt;/p&gt;

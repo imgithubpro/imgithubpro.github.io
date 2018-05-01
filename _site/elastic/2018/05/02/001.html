@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>Elasticsearch REST API 시작하기 | imgithubpro</title>
+	<meta name="description" content="  REST API를 사용하여 Elasticsearch의 각 기능을 살펴본다.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="/elastic/2018/05/02/001.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+
+	<!-- Google Analytics -->
+	
+	<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-118542017-1', 'auto');
+	ga('send', 'pageview');
+	</script>
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">imgithubpro</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			<li>
+				<a class="page-link" href="/categories/">
+					Categories
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
+			
+			
+			
+			
+			<!-- Social icons from Font Awesome, if enabled  -->
+			
+
+
+<li>
+	<a href="mailto:imgoooglepro@gmail.com" title="Email">
+		<i class="fa fa-fw fa-envelope"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/imgithubpro" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            <!-- Search bar -->
+            
+            <li>
+            <form action="/search.html" method="get">
+                <input type="text" id="search-box" name="query" placeholder="Search" class="">
+                <button type="submit" class="">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </form>
+            </li>
+            
+		</ul>
+	</nav>
+    
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">Elasticsearch REST API 시작하기</h1>
+    
+    <p class="meta">
+      May 2, 2018
+      
+    </p>
+  </header>
+  <section class="post-content"><blockquote>
+  <p>REST API를 사용하여 Elasticsearch의 각 기능을 살펴본다.</p>
+</blockquote>
+
+<p><br /></p>
+<h2>클러스터 API</h2>
+
+<hr />
+
+<ul>
+  <li><code class="highlighter-rouge">curl</code>을 사용해서 테스트 
+<br /></li>
+</ul>
+<h3>클러스터 상태</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X GET "localhost:9200/_cat/health?v"
+epoch      timestamp cluster       status node.total node.data shards pri relo init unassign pending_tasks max_task_wait_time active_shards_percent
+1525159681 16:28:01  elasticsearch green           1         1      0   0    0    0        0             0                  -                100.0%
+</code></pre></div></div>
+<ul>
+  <li>status : 클러스터의 상태 값은 녹색/노란색/빨간색 중 하나
+    <ul>
+      <li>green : 클러스터 정상 작동</li>
+      <li>yellow : 모든 데이터가 사용 가능한 상태이지만 일부 리플리카가 아직 배정되지 않은 상태(클러스터는 정상 작동 중)</li>
+      <li>red : 어떤 이유로 일부 데이터가 사용할 수 없는 상태</li>
+    </ul>
+  </li>
+</ul>
+
+<p>클러스터 노드 목록</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X GET "localhost:9200/_cat/nodes?v"
+ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role master name
+127.0.0.1           12          97   1    0.14    0.08     0.11 mdi       *      FxRG3ga
+</code></pre></div></div>
+
+<p><br /></p>
+<h3>인덱스 확인</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X GET "localhost:9200/_cat/indices?v"
+health status index uuid pri rep docs.count docs.deleted store.size pri.store.size
+</code></pre></div></div>
+<ul>
+  <li>아직 클러스터에 인덱스가 없는 경우</li>
+</ul>
+
+<p>인덱스 생성</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer?pretty"
+{
+	"acknowledged" : true,
+	"shards_acknowledged" : true
+}
+$ curl -X GET "localhost:9200/_cat/indices?v"
+health status index    uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+yellow open   customer TStBp1JvQ3ii3xvAZmRAlw   5   1          0            0       650b           650b
+</code></pre></div></div>
+<ul>
+  <li>PUT을 통해 “customer”라는 인덱스 생성</li>
+  <li>마지막 <code class="highlighter-rouge">pretty</code>를 추가할 경우, JSON응답이 있다면 pretty-print 수행</li>
+  <li>두 번째 명령의 결과를 보면 customer라는 인덱스 1개가 있고 이 인덱스는 기본 샤드 5개, 리플리카 1개로 포함된 다큐먼트는 0개</li>
+  <li>customer 인덱스는 노란색 상태 태그로 표시
+    <ul>
+      <li>Elasticsearch에서는 기본적으로 인덱스에 대해 리플리카를 1개 생성</li>
+      <li>이 리플리카가 하나의 노드에서 실행 중이므로 고가용성을 위해 배정될 수 없음</li>
+      <li>나중에 이 리플리카가 두 번째 노드에 배정 시 녹색으로 변경</li>
+    </ul>
+  </li>
+</ul>
+
+<p><br /></p>
+<h3>다큐먼트 인덱싱 및 쿼리</h3>
+
+<p>Elasticsearch에서 데이터에 액세스하는 패턴</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;REST Verb&gt; /&lt;Index&gt;/&lt;Type&gt;/&lt;ID&gt;
+</code></pre></div></div>
+
+<p>다큐먼트 추가</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
+&gt;      -H "Content-Type:application/json"\
+&gt;      -d '{"name":"John Doe"}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "created" : true
+}
+</code></pre></div></div>
+<ul>
+  <li>customer 색인 및 external 타입에 새 고객 문서가 생성</li>
+  <li>Elasticsearch는 문서를 인덱싱하기 전에 명시적으로 인덱스를 생성할 필요가 없음</li>
+  <li>앞의 예에서 customer 인덱스가 없으면 자동으로 생성</li>
+</ul>
+
+<p>방금 인덱싱한 문서 검색</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X GET "localhost:9200/customer/external/1?pretty"
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 1,
+  "found" : true,
+  "_source" : {
+    "name" : "John Doe"
+  }
+}
+</code></pre></div></div>
+<ul>
+  <li><code class="highlighter-rouge">found</code> : 요청된 ID 1에 해당하는 문서를 찾았다고 알려줌</li>
+  <li><code class="highlighter-rouge">_source</code> : JSON 문서 전체를 반환</li>
+</ul>
+
+<p><br /></p>
+<h3>인덱스 삭제</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X DELETE "localhost:9200/customer?pretty"
+{
+  "acknowledged" : true
+}
+$ curl -X GET "localhost:9200/_cat/indices?v"
+health status index uuid pri rep docs.count docs.deleted store.size pri.store.size
+</code></pre></div></div>
+<p><br /></p>
+<h2>데이터 수정</h2>
+
+<hr />
+
+<ul>
+  <li>데이터는 인덱싱/업데이트/삭제하는 시점부터 검색 결과에 나타나는 시점까지 1초 정도 소요(새로고침 간격)</li>
+</ul>
+
+<p><br /></p>
+<h3>문서 인덱싱/대체</h3>
+
+<p>앞서 단일 문서 인덱싱 예제를 다시 실행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
+&gt;       -H "Content-Type:application/json"\
+&gt;       -d '{"name":"John Doe"}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "created" : true
+}
+</code></pre></div></div>
+
+<p>문서의 내용을 바꿔서 동일하게 다시 실행</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
+&gt;          -H "Content-Type:application/json"\
+&gt;          -d '{"name":"Jane Doe"}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 2,
+  "result" : "updated",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "created" : false
+}
+</code></pre></div></div>
+<ul>
+  <li>ID가 1인 문서의 name이 “John doe”에서 “Jane Doe”로 바뀜</li>
+</ul>
+
+<p>ID없이 인덱싱하는 경우</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external?pretty"\
+&gt;          -H "Content-Type:application/json"\
+&gt;          -d '{"name":"Jane Doe"}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "AWMb2NtytvPg5vPfDWWF",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "created" : true
+}
+</code></pre></div></div>
+<ul>
+  <li>ID를 지정하지 않으면 PUT대신 POST 사용</li>
+</ul>
+
+<p><br /></p>
+<h3>문서 업데이트</h3>
+
+<ul>
+  <li>문서를 업데이트하면 기존 문서가 삭제되고 새 문서를 인덱싱한 후 여기에 업데이트 적용</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/1/_update?pretty"\
+&gt;          -H "Content-Type:application/json"\
+&gt;          -d '{"doc":{"name":"Jane Doe", "age":20}}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 3,
+  "result" : "updated",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  }
+}
+</code></pre></div></div>
+
+<p>스크립트를 통한 업데이트</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/1/_update?pretty"\
+&gt;          -H "Content-Type:application/json"\
+&gt;          -d '{"script" : "ctx._source.age += 5"}'
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 4,
+  "result" : "updated",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  }
+}
+$ curl -X GET "localhost:9200/customer/external/1?pretty"
+{
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 4,
+  "found" : true,
+  "_source" : {
+    "name" : "Jane Doe",
+    "age" : 25
+  }
+}
+</code></pre></div></div>
+<ul>
+  <li><code class="highlighter-rouge">ctx._source</code>는 업데이트하려는 현재 소스 문서</li>
+</ul>
+
+<p><br /></p>
+<h3>문서 삭제</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X DELETE "localhost:9200/customer/external/1?pretty"
+{
+  "found" : true,
+  "_index" : "customer",
+  "_type" : "external",
+  "_id" : "1",
+  "_version" : 5,
+  "result" : "deleted",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  }
+}
+</code></pre></div></div>
+
+<p><br /></p>
+<h3>배치 처리</h3>
+
+<p>간단한 예로 하나의 벌크 호출로 문서 2개를 인덱싱</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/_bulk?pretty"\
+&gt;  -d '{"index":{"_id":"1"}}
+&gt; {"name":"John Doe"}
+&gt; {"index":{"_id":"2"}}
+&gt; {"name":"Jane Doe"}'
+{
+  "took" : 99,
+  "errors" : false,
+  "items" : [
+    {
+      "index" : {
+        "_index" : "customer",
+        "_type" : "external",
+        "_id" : "1",
+        "_version" : 1,
+        "result" : "created",
+        "_shards" : {
+          "total" : 2,
+          "successful" : 1,
+          "failed" : 0
+        },
+        "created" : true,
+        "status" : 201
+      }
+    }
+  ]
+}
+</code></pre></div></div>
+<p>$ curl -X POST “localhost:9200/customer/external/_bulk?pretty”\</p>
+<blockquote>
+  <p>-d ‘{“update”:{“_id”:”1”}}
+{“doc”: { “name”: “John Doe becomes Jane Doe” } }
+{“delete”:{“_id”:”2”}}’
+{
+  “took” : 26,
+  “errors” : false,
+  “items” : [
+    {
+      “update” : {
+        “_index” : “customer”,
+        “_type” : “external”,
+        “_id” : “1”,
+        “_version” : 2,
+        “result” : “updated”,
+        “_shards” : {
+          “total” : 2,
+          “successful” : 1,
+          “failed” : 0
+        },
+        “status” : 200
+      }
+    }
+  ]
+}
+```</p>
+</blockquote>
+</section>
+  
+<footer>
+  <div class="tags">
+    
+    <a class="tag" href="/tags#elastic">#elastic</a>
+    
+    <a class="tag" href="/tags#elasticsearch">#elasticsearch</a>
+    
+  </div>
+</footer>
+
+
+</article>
+
+<!-- Disqus -->
+
+
+<!-- Post navigation -->
+
+
+    </div>
+    
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/rohanchandra/type-theme">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>
