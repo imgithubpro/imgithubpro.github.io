@@ -5,12 +5,157 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Sun, 29 Apr 2018 20:39:15 +0900</pubDate>
+    <pubDate>Tue, 01 May 2018 16:05:03 +0900</pubDate>
+    
+      <item>
+        <title>Elasticsearch 시작하기</title>
+        <link>/elastic/2018/05/01/001.html</link>
+        <guid isPermaLink="true">/elastic/2018/05/01/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;Elasticsearch의 기본개념에 대해 알아보고 CentOS 7에 설치해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;Elasticsearch 기본개념&lt;/h2&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;NRT(Near Realtime)&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Elasticsearch는 NRT 검색 플랫폼&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;클러스터&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;하나 이상의 노드(서버)가 모인 것&lt;/li&gt;
+  &lt;li&gt;고유한 이름으로 식별되며 기본 이름은 “elasticsearch”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;노드&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;클러스터에 포함된 단일 서버&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;인덱스&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;단일 클러스터에 원하는 개수의 인덱스 정의 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;타입&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;하나의 인덱스에서 하나 이상의 타입 정의 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;도큐먼트&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;도큐먼트는 인덱싱할 수 있는 기본 정보 단위&lt;/li&gt;
+  &lt;li&gt;JSON형태&lt;/li&gt;
+  &lt;li&gt;하나의 인덱스/타입에 원하는 개수의 도큐먼트 저장 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;샤드 &amp;amp; 리플리카&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;인덱스를 샤드라는 조각으로 분할하여 저장&lt;/li&gt;
+  &lt;li&gt;샤드에 대한 복사본을 리플리카라고 함&lt;/li&gt;
+  &lt;li&gt;인덱스가 생성된 다음 리플리카는 언제든 변경 가능하지만, 샤드 수는 사후 변경 불가&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;Elasticsearch 설치&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Elasticsearch는 Java 8 이상이 필요&lt;/li&gt;
+  &lt;li&gt;CentOS 7 기준 설치&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Java 설치&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo yum localinstall -y jdk-8u77-linux-x64.rpm
+$ cd /usr/java
+$ sudo ln -s /usr/java/default java8
+$ java -version
+java version &quot;1.8.0_77&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_77-b03)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Elasticsearch 설치&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -x http://proxy.yourhost:port -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.3.tar.gz
+$ tar -xvf elasticsearch-5.4.3.tar.gz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;[참고] 메모리가 부족한 경우 &lt;code class=&quot;highlighter-rouge&quot;&gt;elasticsearch-5.4.3/config/jvm.options&lt;/code&gt; 에서 heap size 수정&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-Xms1g
+-Xmx1g
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Elasticsearch 실행&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;“FxRG3ga”라는 노드가 실행
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cd elasticsearch-5.4.3/bin
+$ ./elasticsearch
+[2018-05-01T01:25:58,835][INFO ][o.e.e.NodeEnvironment    ] [FxRG3ga] using [1] data paths, mounts [[/ (rootfs)]], net usable_space [45gb], net total_space [49.9gb], spins? [unknown], types [rootfs]
+[2018-05-01T01:25:58,837][INFO ][o.e.e.NodeEnvironment    ] [FxRG3ga] heap size [1007.3mb], compressed ordinary object pointers [true]
+[2018-05-01T01:25:58,839][INFO ][o.e.n.Node               ] node name [FxRG3ga] derived from node ID [FxRG3gaDRHWfqpaQR6noNQ]; set [node.name] to override
+[2018-05-01T01:25:58,840][INFO ][o.e.n.Node               ] version[5.4.3], pid[25964], build[eed30a8/2017-06-22T00:34:03.743Z], OS[Linux/3.10.0-693.21.1.el7.x86_64/amd64], JVM[Oracle Corporation/Java HotSpot(TM) 64-Bit Server VM/1.8.0_77/25.77-b03]
+[2018-05-01T01:25:58,840][INFO ][o.e.n.Node               ] JVM arguments [-Xms1g, -Xmx1g, -XX:+UseConcMarkSweepGC, -XX:CMSInitiatingOccupancyFraction=75, -XX:+UseCMSInitiatingOccupancyOnly, -XX:+DisableExplicitGC, -XX:+AlwaysPreTouch, -Xss1m, -Djava.awt.headless=true, -Dfile.encoding=UTF-8, -Djna.nosys=true, -Djdk.io.permissionsUseCanonicalPath=true, -Dio.netty.noUnsafe=true, -Dio.netty.noKeySetOptimization=true, -Dio.netty.recycler.maxCapacityPerThread=0, -Dlog4j.shutdownHookEnabled=false, -Dlog4j2.disable.jmx=true, -Dlog4j.skipJansi=true, -XX:+HeapDumpOnOutOfMemoryError, -Des.path.home=/home/deploy/tmp/elasticsearch-5.4.3]
+[2018-05-01T01:26:02,151][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [aggs-matrix-stats]
+[2018-05-01T01:26:02,152][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [ingest-common]
+[2018-05-01T01:26:02,153][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [lang-expression]
+[2018-05-01T01:26:02,153][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [lang-groovy]
+[2018-05-01T01:26:02,153][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [lang-mustache]
+[2018-05-01T01:26:02,153][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [lang-painless]
+[2018-05-01T01:26:02,153][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [percolator]
+[2018-05-01T01:26:02,154][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [reindex]
+[2018-05-01T01:26:02,154][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [transport-netty3]
+[2018-05-01T01:26:02,154][INFO ][o.e.p.PluginsService     ] [FxRG3ga] loaded module [transport-netty4]
+[2018-05-01T01:26:02,156][INFO ][o.e.p.PluginsService     ] [FxRG3ga] no plugins loaded
+[2018-05-01T01:26:04,213][INFO ][o.e.d.DiscoveryModule    ] [FxRG3ga] using discovery type [zen]
+[2018-05-01T01:26:05,382][INFO ][o.e.n.Node               ] initialized
+[2018-05-01T01:26:05,382][INFO ][o.e.n.Node               ] [FxRG3ga] starting ...
+[2018-05-01T01:26:05,601][INFO ][o.e.t.TransportService   ] [FxRG3ga] publish_address {127.0.0.1:9300}, bound_addresses {127.0.0.1:9300}
+[2018-05-01T01:26:08,729][INFO ][o.e.c.s.ClusterService   ] [FxRG3ga] new_master {FxRG3ga}{FxRG3gaDRHWfqpaQR6noNQ}{bDF_nP_QR2qUgN_fZS1rgQ}{127.0.0.1}{127.0.0.1:9300}, reason: zen-disco-elected-as-master ([0] nodes joined)
+[2018-05-01T01:26:08,784][INFO ][o.e.h.n.Netty4HttpServerTransport] [FxRG3ga] publish_address {127.0.0.1:9200}, bound_addresses {127.0.0.1:9200}
+[2018-05-01T01:26:08,793][INFO ][o.e.g.GatewayService     ] [FxRG3ga] recovered [0] indices into cluster_state
+[2018-05-01T01:26:08,791][INFO ][o.e.n.Node               ] [FxRG3ga] started
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;클러스터 또는 노드 이름 설정&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./elasticsearch -Ecluster.name=my_cluster_name -Enode.name=my_node_name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;실행 확인&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl http://localhost:9200/
+{
+  &quot;name&quot; : &quot;FxRG3ga&quot;,
+  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,
+  &quot;cluster_uuid&quot; : &quot;zZzodj6uRA2p21N9BNAkpQ&quot;,
+  &quot;version&quot; : {
+    &quot;number&quot; : &quot;5.4.3&quot;,
+    &quot;build_hash&quot; : &quot;eed30a8&quot;,
+    &quot;build_date&quot; : &quot;2017-06-22T00:34:03.743Z&quot;,
+    &quot;build_snapshot&quot; : false,
+    &quot;lucene_version&quot; : &quot;6.5.1&quot;
+  },
+  &quot;tagline&quot; : &quot;You Know, for Search&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+출처 : &lt;a href=&quot;https://www.elastic.co/guide/kr/elasticsearch/reference/current/getting-started.html&quot;&gt;https://www.elastic.co/guide/kr/elasticsearch/reference/current/getting-started.html&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 01 May 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>VirtualBox 설치하기</title>
-        <link>/etc/2018/04/29/002.html</link>
-        <guid isPermaLink="true">/etc/2018/04/29/002.html</guid>
+        <link>/linux/2018/04/29/002.html</link>
+        <guid isPermaLink="true">/linux/2018/04/29/002.html</guid>
         <description>&lt;blockquote&gt;
   &lt;p&gt;CentOS 7 에 VirtualBox 설치해보자.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -43,7 +188,6 @@ $ yum list VirtualBox*
 &lt;p&gt;[참고] 의존성 라이브러리 rpm으로 직접 설치&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rpm -ivh 패키지명
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
 </description>
         <pubDate>Sun, 29 Apr 2018 00:00:00 +0900</pubDate>
       </item>
