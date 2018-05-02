@@ -255,7 +255,6 @@ yellow open   customer TStBp1JvQ3ii3xvAZmRAlw   5   1          0            0   
 
 <p>다큐먼트 추가</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
-&gt;      -H "Content-Type:application/json"\
 &gt;      -d '{"name":"John Doe"}'
 {
   "_index" : "customer",
@@ -319,7 +318,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 <p>앞서 단일 문서 인덱싱 예제를 다시 실행</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
-&gt;       -H "Content-Type:application/json"\
 &gt;       -d '{"name":"John Doe"}'
 {
   "_index" : "customer",
@@ -338,7 +336,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 <p>문서의 내용을 바꿔서 동일하게 다시 실행</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X PUT "localhost:9200/customer/external/1?pretty"\
-&gt;          -H "Content-Type:application/json"\
 &gt;          -d '{"name":"Jane Doe"}'
 {
   "_index" : "customer",
@@ -360,7 +357,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 <p>ID없이 인덱싱하는 경우</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external?pretty"\
-&gt;          -H "Content-Type:application/json"\
 &gt;          -d '{"name":"Jane Doe"}'
 {
   "_index" : "customer",
@@ -388,7 +384,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 </ul>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/1/_update?pretty"\
-&gt;          -H "Content-Type:application/json"\
 &gt;          -d '{"doc":{"name":"Jane Doe", "age":20}}'
 {
   "_index" : "customer",
@@ -406,7 +401,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 <p>스크립트를 통한 업데이트</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/1/_update?pretty"\
-&gt;          -H "Content-Type:application/json"\
 &gt;          -d '{"script" : "ctx._source.age += 5"}'
 {
   "_index" : "customer",
@@ -487,35 +481,39 @@ $ curl -X GET "localhost:9200/customer/external/1?pretty"
     }
   ]
 }
+
 </code></pre></div></div>
-<p>$ curl -X POST “localhost:9200/customer/external/_bulk?pretty”\</p>
-<blockquote>
-  <p>-d ‘{“update”:{“_id”:”1”}}
-{“doc”: { “name”: “John Doe becomes Jane Doe” } }
-{“delete”:{“_id”:”2”}}’
+
+<p>업데이트와 삭제를 배치로 처리</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl -X POST "localhost:9200/customer/external/_bulk?pretty"\
+&gt; -d '{"update":{"_id":"1"}}
+&gt; {"doc": { "name": "John Doe becomes Jane Doe" } }
+&gt; {"delete":{"_id":"2"}}'
 {
-  “took” : 26,
-  “errors” : false,
-  “items” : [
+  "took" : 26,
+  "errors" : false,
+  "items" : [
     {
-      “update” : {
-        “_index” : “customer”,
-        “_type” : “external”,
-        “_id” : “1”,
-        “_version” : 2,
-        “result” : “updated”,
-        “_shards” : {
-          “total” : 2,
-          “successful” : 1,
-          “failed” : 0
+      "update" : {
+        "_index" : "customer",
+        "_type" : "external",
+        "_id" : "1",
+        "_version" : 2,
+        "result" : "updated",
+        "_shards" : {
+          "total" : 2,
+          "successful" : 1,
+          "failed" : 0
         },
-        “status” : 200
+        "status" : 200
       }
     }
   ]
 }
-```</p>
-</blockquote>
+</code></pre></div></div>
+
+<p><br />
+출처 : <a href="https://www.elastic.co/guide/kr/elasticsearch/reference/current/gs-exploring-cluster.html">https://www.elastic.co/guide/kr/elasticsearch/reference/current/gs-exploring-cluster.html</a></p>
 </section>
   
 <footer>

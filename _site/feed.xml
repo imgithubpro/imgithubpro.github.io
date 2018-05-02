@@ -5,7 +5,411 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Wed, 02 May 2018 02:12:42 +0900</pubDate>
+    <pubDate>Thu, 03 May 2018 00:32:02 +0900</pubDate>
+    
+      <item>
+        <title>Elasticsearch 데이터 탐색하기</title>
+        <link>/elastic/2018/05/03/001.html</link>
+        <guid isPermaLink="true">/elastic/2018/05/03/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;샘플 데이터를 사용하여 Elasticsearch의 데이터 탐색 기능들을 테스트한다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;데이터 탐색&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;샘플 데이터 집합 로드&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://raw.githubusercontent.com/elastic/elasticsearch/master/docs/src/test/resources/accounts.json&quot;&gt;데이터 집합&lt;/a&gt;을 &lt;code class=&quot;highlighter-rouge&quot;&gt;accounts.json&lt;/code&gt;으로 저장&lt;/li&gt;
+  &lt;li&gt;해당 파일을 클러스터에 로드
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -H &quot;Content-Type: application/json&quot; -XPOST 'localhost:9200/bank/account/_bulk?pretty&amp;amp;refresh' --data-binary &quot;@accounts.json&quot;
+$ curl 'localhost:9200/_cat/indices?v'
+health status index    uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+yellow open   bank     G1qJ7B-FTkS4Ut6R41dq9A   5   1       1000            0    648.2kb        648.2kb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;검색 API&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;검색 실행 방법 : REST 요청 URL을 통해 검색 매개변수를 보내는 방법 &amp;amp; REST 요청 본문을 통해 보내는 방법&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;검색을 위한 REST API는 &lt;code class=&quot;highlighter-rouge&quot;&gt;_search&lt;/code&gt; 엔드포인트에서 액세스 가능&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;bank 인덱스의 모든 문서를 반환&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?q=*&amp;amp;sort=account_number:asc&amp;amp;pretty&quot;
+{
+  &quot;took&quot; : 217,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 5,
+    &quot;successful&quot; : 5,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : 1000,
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [
+      {
+        &quot;_index&quot; : &quot;bank&quot;,
+        &quot;_type&quot; : &quot;account&quot;,
+        &quot;_id&quot; : &quot;0&quot;,
+        &quot;_score&quot; : null,
+        &quot;_source&quot; : {
+          &quot;account_number&quot; : 0,
+          &quot;balance&quot; : 16623,
+          &quot;firstname&quot; : &quot;Bradshaw&quot;,
+          &quot;lastname&quot; : &quot;Mckenzie&quot;,
+          &quot;age&quot; : 29,
+          &quot;gender&quot; : &quot;F&quot;,
+          &quot;address&quot; : &quot;244 Columbus Place&quot;,
+          &quot;employer&quot; : &quot;Euron&quot;,
+          &quot;email&quot; : &quot;bradshawmckenzie@euron.com&quot;,
+          &quot;city&quot; : &quot;Hobucken&quot;,
+          &quot;state&quot; : &quot;CO&quot;
+        },
+        &quot;sort&quot; : [
+          0
+        ]
+      },
+      {
+        &quot;_index&quot; : &quot;bank&quot;,
+	...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;q=* 매개변수로 모든 문서를 비교하여 일치 여부를 확인&lt;/li&gt;
+  &lt;li&gt;sort=account_number:asc 매개변수는 각 문서의 account_number 필드를 기준으로 오름차순&lt;/li&gt;
+  &lt;li&gt;응답 확인
+    &lt;ul&gt;
+      &lt;li&gt;took - 검색을 실행하는데 걸린 시간(밀리초)&lt;/li&gt;
+      &lt;li&gt;timed_out - 검색의 시간 초과 여부&lt;/li&gt;
+      &lt;li&gt;_shards - 검색한 샤드 수 및 검색에 성공/실패한 샤드 수&lt;/li&gt;
+      &lt;li&gt;hits - 검색 결과&lt;/li&gt;
+      &lt;li&gt;hits.total - 검색 조건과 일치하는 문서의 총 개수&lt;/li&gt;
+      &lt;li&gt;hits.hits - 검색 결과의 실제 배열(기본 설정은 처음 10개 문서)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;동일한 내용을 요청 본문 방식을 사용할 경우&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search&quot;\
+&amp;gt;      -d '{
+&amp;gt;        &quot;query&quot;: { &quot;match_all&quot;: {} },
+&amp;gt;        &quot;sort&quot;: [
+&amp;gt;          { &quot;account_number&quot;: &quot;asc&quot; }
+&amp;gt;        ]
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;쿼리 언어 소개&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;QueryDSL이라는 JSON 스타일의 도메인 전용 언어 제공&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;앞에서 봤던 마지막 예제&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search&quot; -d '{
+&quot;query&quot; : { &quot;match_all&quot; : {} }
+}'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;query&lt;/code&gt; 부분은 쿼리 정의가 무엇인지 알려줌&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;match_all&lt;/code&gt; 부분은 실행하려는 쿼리의 유형으로 지정된 인덱스의 모든 문서를 검색&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;query&lt;/code&gt; 매개변수 외에 다른 배개변수 전달&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;        &quot;query&quot;: { &quot;match_all&quot;: {} },
+&amp;gt;        &quot;size&quot;: 1
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;size&lt;/code&gt;가 지정되지 않으면 기본값은 10&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;다음은 문서 11~20을 반환하는 예제&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;        &quot;query&quot;: { &quot;match_all&quot;: {} },
+&amp;gt;        &quot;from&quot; : 10,
+&amp;gt;        &quot;size&quot;: 10
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;match_all&lt;/code&gt; 을 수행하고 잔액을 기준으로 10개(기본크기)를 내림차순 정렬&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;        &quot;query&quot;: { &quot;match_all&quot;: {} },
+&amp;gt;        &quot;sort&quot;: { &quot;balance&quot; : { &quot;order&quot; : &quot;desc&quot; } }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;검색 실행&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Query DSL 을 좀 더 자세히 살펴본다.&lt;/li&gt;
+  &lt;li&gt;전체 JSON 문서가 모든 검색의 일부로 반환되며 이를 _source 필드라고 함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;_source 중 일부 필드만 반환되도록 테스트&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;        &quot;query&quot;: { &quot;match_all&quot;: {} },
+&amp;gt;        &quot;_source&quot;: [ &quot;account_number&quot;, &quot;balance&quot; ]
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;SQL SELECT FROM 필드와 비슷함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;match 쿼리 예제&lt;/h3&gt;
+
+&lt;p&gt;번호가 20인 계정&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: { &quot;match&quot;: { &quot;account_number&quot; : 20 } }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;주소에 “mill”이라는 용어가 있는 모든 계정&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: { &quot;match_phrase&quot;: { &quot;address&quot; : &quot;mill lane&quot; } }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;bool(Boolean)쿼리&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bool must&lt;/code&gt; 절에 지정된 모든 쿼리가 true가 되는 문서&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: {
+&amp;gt;           &quot;bool&quot; : {
+&amp;gt;               &quot;must&quot; : [
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;mill&quot; } },
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;lane&quot; } }
+&amp;gt;               ]
+&amp;gt;             }
+&amp;gt;       }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;“mill”과 “lane”이 있는 모든 계정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bool should&lt;/code&gt; 절에 지정된 쿼리 중 하나라도 true가 되는 문서&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: {
+&amp;gt;           &quot;bool&quot; : {
+&amp;gt;               &quot;should&quot; : [
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;mill&quot; } },
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;lane&quot; } }
+&amp;gt;               ]
+&amp;gt;             }
+&amp;gt;       }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;“mill” 또는 “lane”이 있는 모든 계정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;must_not&lt;/code&gt; 사용&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: {
+&amp;gt;           &quot;bool&quot; : {
+&amp;gt;               &quot;must_not&quot; : [
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;mill&quot; } },
+&amp;gt;                 { &quot;match&quot; : { &quot;address&quot; : &quot;lane&quot; } }
+&amp;gt;               ]
+&amp;gt;             }
+&amp;gt;       }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;must_not&lt;/code&gt;에 지정된 쿼리 중 어느 것도 true가 아닌 문서&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;하나의 bool 쿼리 내에 must, should, must_not 절을 동시에 조합&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: {
+&amp;gt;           &quot;bool&quot; : {
+&amp;gt;               &quot;must&quot; : [
+&amp;gt;                 { &quot;match&quot; : { &quot;age&quot; : &quot;40&quot; } }
+&amp;gt;               ],
+&amp;gt;               &quot;must_not&quot; : [
+&amp;gt;                 { &quot;match&quot; : { &quot;state&quot; : &quot;ID&quot; } }
+&amp;gt;               ]
+&amp;gt;             }
+&amp;gt;       }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;필터 실행&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bool 쿼리&lt;/code&gt;의 filter절을 테스트&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;range쿼리&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;       &quot;query&quot;: {
+&amp;gt;           &quot;bool&quot; : {
+&amp;gt;               &quot;must&quot; : { &quot;match_all&quot; : {} },
+&amp;gt;               &quot;filter&quot; : {
+&amp;gt;                   &quot;range&quot; : {
+&amp;gt;                       &quot;balance&quot; : {
+&amp;gt;                           &quot;gte&quot; : 20000,
+&amp;gt;                           &quot;lte&quot; : 30000
+&amp;gt;                       }
+&amp;gt;                   }
+&amp;gt;               }
+&amp;gt;             }
+&amp;gt;       }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;집계 실행&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;SQL GROUP BY 및 SQL 집계 기능과 유사&lt;/li&gt;
+  &lt;li&gt;하나의 응답에서 검색과 동시에 그와 별도로 집계 결과 반환 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;주를 기준으로 그룹화하고 내림차순(기본 설정)으로 상위 10개(기본 설정) 주 반환&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;          &quot;size&quot; : 0,
+&amp;gt;         &quot;aggs&quot; : {
+&amp;gt;             &quot;group_by_state&quot; : {
+&amp;gt;                 &quot;terms&quot; : {
+&amp;gt;                     &quot;field&quot; : &quot;state.keyword&quot;
+&amp;gt;                 }
+&amp;gt;             }
+&amp;gt;         }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;개념상 다음 SQL 과 비슷&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SELECT state, COUNT(*) FROM bank GROUP BY state ORDER BY COUNT(*) DESC
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;다음은 응답의 일부&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&quot;aggregations&quot; : {
+    &quot;group_by_state&quot; : {
+      &quot;doc_count_error_upper_bound&quot; : 20,
+      &quot;sum_other_doc_count&quot; : 770,
+      &quot;buckets&quot; : [
+        {
+          &quot;key&quot; : &quot;ID&quot;,
+          &quot;doc_count&quot; : 27
+        },
+        {
+          &quot;key&quot; : &quot;TX&quot;,
+          &quot;doc_count&quot; : 27
+        },
+        {
+          &quot;key&quot; : &quot;AL&quot;,
+          &quot;doc_count&quot; : 25
+        },
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;응답에서 집계 결과만 보고 검색 결과는 표시하지 않기 위해 size=0으로 설정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;앞의 집계를 바탕으로 주별 평균 계좌 잔액을 내림차순으로 정렬&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;calhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;          &quot;size&quot; : 0,
+&amp;gt;         &quot;aggs&quot; : {
+&amp;gt;             &quot;group_by_state&quot; : {
+&amp;gt;                 &quot;terms&quot; : {
+&amp;gt;                     &quot;field&quot; : &quot;state.keyword&quot;,
+&amp;gt;                     &quot;order&quot; : {
+&amp;gt;                         &quot;average_balance&quot; : &quot;desc&quot;
+&amp;gt;                     }
+&amp;gt;                 },
+&amp;gt;                 &quot;aggs&quot; : {
+&amp;gt;                     &quot;average_balance&quot; : {
+&amp;gt;                         &quot;avg&quot; : {
+&amp;gt;                             &quot;field&quot; : &quot;balance&quot;
+&amp;gt;                         }
+&amp;gt;                     }
+&amp;gt;                 }
+&amp;gt;             }
+&amp;gt;         }
+&amp;gt;      }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;연령대(20-29, 30-39, 40-49)를 기준으로, 성별로 그룹화하고 연령대, 성별 기준 평균 계정 잔액&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X GET &quot;localhost:9200/bank/_search?pretty&quot;\
+&amp;gt;      -d '{
+&amp;gt;           &quot;size&quot;: 0,
+&amp;gt;           &quot;aggs&quot;: {
+&amp;gt;             &quot;group_by_age&quot;: {
+&amp;gt;               &quot;range&quot;: {
+&amp;gt;                 &quot;field&quot;: &quot;age&quot;,
+&amp;gt;                 &quot;ranges&quot;: [
+&amp;gt;                   {
+&amp;gt;                     &quot;from&quot;: 20,
+&amp;gt;                     &quot;to&quot;: 30
+&amp;gt;                   },
+&amp;gt;                   {
+&amp;gt;                     &quot;from&quot;: 30,
+&amp;gt;                     &quot;to&quot;: 40
+&amp;gt;                   },
+&amp;gt;                   {
+&amp;gt;                     &quot;from&quot;: 40,
+&amp;gt;                     &quot;to&quot;: 50
+&amp;gt;                   }
+&amp;gt;                 ]
+&amp;gt;               },
+&amp;gt;               &quot;aggs&quot;: {
+&amp;gt;                 &quot;group_by_gender&quot;: {
+&amp;gt;                   &quot;terms&quot;: {
+&amp;gt;                     &quot;field&quot;: &quot;gender.keyword&quot;
+&amp;gt;                   },
+&amp;gt;                   &quot;aggs&quot;: {
+&amp;gt;                     &quot;average_balance&quot;: {
+&amp;gt;                       &quot;avg&quot;: {
+&amp;gt;                         &quot;field&quot;: &quot;balance&quot;
+&amp;gt;                       }
+&amp;gt;                     }
+&amp;gt;                   }
+&amp;gt;                 }
+&amp;gt;               }
+&amp;gt;             }
+&amp;gt;           }
+&amp;gt;         }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Thu, 03 May 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>Elasticsearch REST API 시작하기</title>
@@ -88,7 +492,6 @@ yellow open   customer TStBp1JvQ3ii3xvAZmRAlw   5   1          0            0   
 
 &lt;p&gt;다큐먼트 추가&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
-&amp;gt;      -H &quot;Content-Type:application/json&quot;\
 &amp;gt;      -d '{&quot;name&quot;:&quot;John Doe&quot;}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -152,7 +555,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 &lt;p&gt;앞서 단일 문서 인덱싱 예제를 다시 실행&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
-&amp;gt;       -H &quot;Content-Type:application/json&quot;\
 &amp;gt;       -d '{&quot;name&quot;:&quot;John Doe&quot;}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -171,7 +573,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 &lt;p&gt;문서의 내용을 바꿔서 동일하게 다시 실행&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X PUT &quot;localhost:9200/customer/external/1?pretty&quot;\
-&amp;gt;          -H &quot;Content-Type:application/json&quot;\
 &amp;gt;          -d '{&quot;name&quot;:&quot;Jane Doe&quot;}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -193,7 +594,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 &lt;p&gt;ID없이 인덱싱하는 경우&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external?pretty&quot;\
-&amp;gt;          -H &quot;Content-Type:application/json&quot;\
 &amp;gt;          -d '{&quot;name&quot;:&quot;Jane Doe&quot;}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -221,7 +621,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/1/_update?pretty&quot;\
-&amp;gt;          -H &quot;Content-Type:application/json&quot;\
 &amp;gt;          -d '{&quot;doc&quot;:{&quot;name&quot;:&quot;Jane Doe&quot;, &quot;age&quot;:20}}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -239,7 +638,6 @@ health status index uuid pri rep docs.count docs.deleted store.size pri.store.si
 
 &lt;p&gt;스크립트를 통한 업데이트&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/1/_update?pretty&quot;\
-&amp;gt;          -H &quot;Content-Type:application/json&quot;\
 &amp;gt;          -d '{&quot;script&quot; : &quot;ctx._source.age += 5&quot;}'
 {
   &quot;_index&quot; : &quot;customer&quot;,
@@ -320,35 +718,39 @@ $ curl -X GET &quot;localhost:9200/customer/external/1?pretty&quot;
     }
   ]
 }
+
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;$ curl -X POST “localhost:9200/customer/external/_bulk?pretty”\&lt;/p&gt;
-&lt;blockquote&gt;
-  &lt;p&gt;-d ‘{“update”:{“_id”:”1”}}
-{“doc”: { “name”: “John Doe becomes Jane Doe” } }
-{“delete”:{“_id”:”2”}}’
+
+&lt;p&gt;업데이트와 삭제를 배치로 처리&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ curl -X POST &quot;localhost:9200/customer/external/_bulk?pretty&quot;\
+&amp;gt; -d '{&quot;update&quot;:{&quot;_id&quot;:&quot;1&quot;}}
+&amp;gt; {&quot;doc&quot;: { &quot;name&quot;: &quot;John Doe becomes Jane Doe&quot; } }
+&amp;gt; {&quot;delete&quot;:{&quot;_id&quot;:&quot;2&quot;}}'
 {
-  “took” : 26,
-  “errors” : false,
-  “items” : [
+  &quot;took&quot; : 26,
+  &quot;errors&quot; : false,
+  &quot;items&quot; : [
     {
-      “update” : {
-        “_index” : “customer”,
-        “_type” : “external”,
-        “_id” : “1”,
-        “_version” : 2,
-        “result” : “updated”,
-        “_shards” : {
-          “total” : 2,
-          “successful” : 1,
-          “failed” : 0
+      &quot;update&quot; : {
+        &quot;_index&quot; : &quot;customer&quot;,
+        &quot;_type&quot; : &quot;external&quot;,
+        &quot;_id&quot; : &quot;1&quot;,
+        &quot;_version&quot; : 2,
+        &quot;result&quot; : &quot;updated&quot;,
+        &quot;_shards&quot; : {
+          &quot;total&quot; : 2,
+          &quot;successful&quot; : 1,
+          &quot;failed&quot; : 0
         },
-        “status” : 200
+        &quot;status&quot; : 200
       }
     }
   ]
 }
-```&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;
+출처 : &lt;a href=&quot;https://www.elastic.co/guide/kr/elasticsearch/reference/current/gs-exploring-cluster.html&quot;&gt;https://www.elastic.co/guide/kr/elasticsearch/reference/current/gs-exploring-cluster.html&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Wed, 02 May 2018 00:00:00 +0900</pubDate>
       </item>
