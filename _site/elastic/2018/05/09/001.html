@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>Elastic Stack을 사용한 nginx 로그 모니터링 | imgithubpro</title>
+	<meta name="description" content="  nginx의 access log와 error log를 Filebeat, Logstash, Elasticsearch, Kibana로 모니터링 해보자.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/assets/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="/elastic/2018/05/09/001.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+
+	<!-- Google Analytics -->
+	
+	<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-118542017-1', 'auto');
+	ga('send', 'pageview');
+	</script>
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">imgithubpro</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			<li>
+				<a class="page-link" href="/categories/">
+					Categories
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/tags.html">
+					tags
+				</a>
+			</li>
+			
+			
+			
+			
+			<!-- Social icons from Font Awesome, if enabled  -->
+			
+
+
+<li>
+	<a href="mailto:imgoooglepro@gmail.com" title="Email">
+		<i class="fa fa-fw fa-envelope"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/imgithubpro" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            <!-- Search bar -->
+            
+            <li>
+            <form action="/search.html" method="get">
+                <input type="text" id="search-box" name="query" placeholder="Search" class="">
+                <button type="submit" class="">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </form>
+            </li>
+            
+		</ul>
+	</nav>
+    
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">Elastic Stack을 사용한 nginx 로그 모니터링</h1>
+    
+    <p class="meta">
+      May 9, 2018
+      
+    </p>
+  </header>
+  <section class="post-content"><blockquote>
+  <p>nginx의 access log와 error log를 Filebeat, Logstash, Elasticsearch, Kibana로 모니터링 해보자.</p>
+</blockquote>
+
+<p><br /></p>
+<h2>nginx 시작하기</h2>
+
+<hr />
+
+<p><br /></p>
+<h3>nginx 설치</h3>
+
+<ul>
+  <li>원하는 버전의 nginx를 다운로드(<a href="http://nginx.org/download/">http://nginx.org/download/</a>)</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ tar -xvzf nginx-1.6.2.tar.gz 
+$ cd nginx-1.6.2
+$ ./configure
+$ make
+$ make install 
+</code></pre></div></div>
+<ul>
+  <li>기본 설치 경로 : /usr/local/nginx</li>
+  <li>권한때문에 설치가 되지 않는 경우, 아래 두가지 방법 중 선택
+    <ul>
+      <li>sudo chown -R $(whoami) /usr/local/nginx</li>
+      <li>sudo make install</li>
+    </ul>
+  </li>
+</ul>
+
+<p><br /></p>
+<h3>nginx 실행</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd /usr/local/nginx
+$ ./nginx
+</code></pre></div></div>
+
+<p><br /></p>
+<h3>nginx 정지</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd /usr/local/nginx
+$ ./nginx -s stop
+</code></pre></div></div>
+
+<p><br /></p>
+<h2>Elastic Stack 구축하기</h2>
+
+<hr />
+
+<ul>
+  <li>Filebeat &gt; Logstash &gt; Elasticsearch &gt; Kibana 순서로 로그를 가공</li>
+  <li>각 서비스가 다음 서비스를 바라보고 동작하므로 반대 순서로 서비스 시작</li>
+  <li>즉, kibana &gt; Elasticsearch &gt; Logstash &gt; Filebeat 순서로 서비스 시작</li>
+</ul>
+
+<p><br /></p>
+<h3>Kibana 시작하기</h3>
+
+<ul>
+  <li><a href="https://imgithubpro.github.io/elastic/2018/05/04/001.html">Kibana 설치 및 시작하기</a></li>
+</ul>
+
+<p><br /></p>
+<h3>Elasticsearch 시작하기</h3>
+<ul>
+  <li><a href="https://imgithubpro.github.io/elastic/2018/05/01/001.html">Elasticsearch 설치 및 시작하기</a></li>
+</ul>
+
+<p><br /></p>
+<h3>Logstash 시작하기</h3>
+<ul>
+  <li><a href="https://www.elastic.co/kr/downloads/logstash">Logstash 다운로드</a></li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ tar -xvzf logstash-6.2.4.tar.gz
+$ cd logstash-6.2.4
+</code></pre></div></div>
+<ul>
+  <li>nginx log를 Filebeat로 받기 위해서 plugin 설치</li>
+</ul>
+
+<p>[참고] proxy를 사용하는 경우</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export http_proxy="proxy_host:proxy_port"
+export https_proxy=$http_proxy
+export JRUBY_OPTS="-J-Dhttp.proxyHost=proxy_host -J-Dhttp.proxyPort=proxy_port"
+DEBUG=1 JARS_SKIP='true' bin/logstash-plugin install logstash-input-beats
+</code></pre></div></div>
+
+<ul>
+  <li>nginx log를 처리해서 Elasticsearch로 보내기 위한 config 세팅
+Logstash에서 nginx log 처리를 위해 제공해주는 <a href="https://www.elastic.co/guide/en/logstash/current/logstash-config-for-filebeat-modules.html#parsing-nginx">config</a> 사용</li>
+  <li>아래 내용을 logstash.conf(원하는 파일명)로 저장</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>input {
+  beats {
+    port =&gt; 5044
+    host =&gt; "0.0.0.0"
+  }
+}
+filter {
+  if [fileset][module] == "nginx" {
+    if [fileset][name] == "access" {
+      grok {
+        match =&gt; { "message" =&gt; ["%{IPORHOST:[nginx][access][remote_ip]} - %{DATA:[nginx][access][user_name]} \[%{HTTPDATE:[nginx][access][time]}\] \"%{WORD:[nginx][access][method]} %{DATA:[nginx][access][url]} HTTP/%{NUMBER:[nginx][access][http_version]}\" %{NUMBER:[nginx][access][response_code]} %{NUMBER:[nginx][access][body_sent][bytes]} \"%{DATA:[nginx][access][referrer]}\" \"%{DATA:[nginx][access][agent]}\""] }
+        remove_field =&gt; "message"
+      }
+      mutate {
+        add_field =&gt; { "read_timestamp" =&gt; "%{@timestamp}" }
+      }
+      date {
+        match =&gt; [ "[nginx][access][time]", "dd/MMM/YYYY:H:m:s Z" ]
+        remove_field =&gt; "[nginx][access][time]"
+      }
+      useragent {
+        source =&gt; "[nginx][access][agent]"
+        target =&gt; "[nginx][access][user_agent]"
+        remove_field =&gt; "[nginx][access][agent]"
+      }
+      geoip {
+        source =&gt; "[nginx][access][remote_ip]"
+        target =&gt; "[nginx][access][geoip]"
+      }
+    }
+    else if [fileset][name] == "error" {
+      grok {
+        match =&gt; { "message" =&gt; ["%{DATA:[nginx][error][time]} \[%{DATA:[nginx][error][level]}\] %{NUMBER:[nginx][error][pid]}#%{NUMBER:[nginx][error][tid]}: (\*%{NUMBER:[nginx][error][connection_id]} )?%{GREEDYDATA:[nginx][error][message]}"] }
+        remove_field =&gt; "message"
+      }
+      mutate {
+        rename =&gt; { "@timestamp" =&gt; "read_timestamp" }
+      }
+      date {
+        match =&gt; [ "[nginx][error][time]", "YYYY/MM/dd H:m:s" ]
+        remove_field =&gt; "[nginx][error][time]"
+      }
+    }
+  }
+}
+output {
+  elasticsearch {
+    hosts =&gt; localhost
+    manage_template =&gt; false
+    index =&gt; "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+  }
+}
+</code></pre></div></div>
+
+<ul>
+  <li>config 파일을 사용해서 Logstash 실행</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd logstash-6.2.4/bin
+$ ./logstash -f logstash.conf
+</code></pre></div></div>
+<p><br /></p>
+<h3>Filebeat 시작하기</h3>
+<ul>
+  <li><a href="https://www.elastic.co/kr/downloads/beats/filebeat">Filebeat 다운로드</a></li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ tar -xvzf filebeat-6.2.4-linux-x86_64.tar.gz
+$ cd filebeat-6.2.4-linux-x86_64
+</code></pre></div></div>
+
+<ul>
+  <li>nginx log를 가져가기 위해서 세팅</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ vi filebeat-6.2.4-linux-x86_64/modules.d/nginx.yml
+- module: nginx
+  # Access logs
+  access:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths:
+      - /usr/local/nginx/logs/access.log*
+
+  # Error logs
+  error:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths:
+      - /usr/local/nginx/logs/error.log*
+</code></pre></div></div>
+<ul>
+  <li>Filebeat의 output을 Logstash로 설정</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ vi filebeat-6.2.4-linux-x86_64/filebeat.yml
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  # The Logstash hosts
+  hosts: ["localhost:5044"]
+</code></pre></div></div>
+<ul>
+  <li>nginx module를 사용해서 Filebeat 실행</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./filebeat modules enable nginx
+$ ./filebeat modules list
+$ ./filebeat setup -e # Set up the initial environment
+$ ./filebeat -e # Run Filebeat
+</code></pre></div></div>
+<p><br /></p>
+</section>
+  
+<footer>
+  <div class="tags">
+    
+    <a class="tag" href="/tags#elastic">#elastic</a>
+    
+    <a class="tag" href="/tags#logstash">#logstash</a>
+    
+    <a class="tag" href="/tags#nginx">#nginx</a>
+    
+    <a class="tag" href="/tags#elk">#elk</a>
+    
+    <a class="tag" href="/tags#log">#log</a>
+    
+    <a class="tag" href="/tags#monitoring">#monitoring</a>
+    
+    <a class="tag" href="/tags#elasticsearch">#elasticsearch</a>
+    
+    <a class="tag" href="/tags#kibana">#kibana</a>
+    
+    <a class="tag" href="/tags#filebeat">#filebeat</a>
+    
+  </div>
+</footer>
+
+
+</article>
+
+<!-- Disqus -->
+
+
+<!-- Post navigation -->
+
+
+    </div>
+    
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/rohanchandra/type-theme">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>

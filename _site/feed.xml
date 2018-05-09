@@ -5,14 +5,233 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Fri, 04 May 2018 22:36:45 +0900</pubDate>
+    <pubDate>Wed, 09 May 2018 10:55:51 +0900</pubDate>
+    
+      <item>
+        <title>Elastic Stack을 사용한 nginx 로그 모니터링</title>
+        <link>/elastic/2018/05/09/001.html</link>
+        <guid isPermaLink="true">/elastic/2018/05/09/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;nginx의 access log와 error log를 Filebeat, Logstash, Elasticsearch, Kibana로 모니터링 해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;nginx 시작하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;nginx 설치&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;원하는 버전의 nginx를 다운로드(&lt;a href=&quot;http://nginx.org/download/&quot;&gt;http://nginx.org/download/&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ tar -xvzf nginx-1.6.2.tar.gz 
+$ cd nginx-1.6.2
+$ ./configure
+$ make
+$ make install 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;기본 설치 경로 : /usr/local/nginx&lt;/li&gt;
+  &lt;li&gt;권한때문에 설치가 되지 않는 경우, 아래 두가지 방법 중 선택
+    &lt;ul&gt;
+      &lt;li&gt;sudo chown -R $(whoami) /usr/local/nginx&lt;/li&gt;
+      &lt;li&gt;sudo make install&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;nginx 실행&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cd /usr/local/nginx
+$ ./nginx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;nginx 정지&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cd /usr/local/nginx
+$ ./nginx -s stop
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2&gt;Elastic Stack 구축하기&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Filebeat &amp;gt; Logstash &amp;gt; Elasticsearch &amp;gt; Kibana 순서로 로그를 가공&lt;/li&gt;
+  &lt;li&gt;각 서비스가 다음 서비스를 바라보고 동작하므로 반대 순서로 서비스 시작&lt;/li&gt;
+  &lt;li&gt;즉, kibana &amp;gt; Elasticsearch &amp;gt; Logstash &amp;gt; Filebeat 순서로 서비스 시작&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Kibana 시작하기&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://imgithubpro.github.io/elastic/2018/05/04/001.html&quot;&gt;Kibana 설치 및 시작하기&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Elasticsearch 시작하기&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://imgithubpro.github.io/elastic/2018/05/01/001.html&quot;&gt;Elasticsearch 설치 및 시작하기&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Logstash 시작하기&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.elastic.co/kr/downloads/logstash&quot;&gt;Logstash 다운로드&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ tar -xvzf logstash-6.2.4.tar.gz
+$ cd logstash-6.2.4
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;nginx log를 Filebeat로 받기 위해서 plugin 설치&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;[참고] proxy를 사용하는 경우&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;export http_proxy=&quot;proxy_host:proxy_port&quot;
+export https_proxy=$http_proxy
+export JRUBY_OPTS=&quot;-J-Dhttp.proxyHost=proxy_host -J-Dhttp.proxyPort=proxy_port&quot;
+DEBUG=1 JARS_SKIP='true' bin/logstash-plugin install logstash-input-beats
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;nginx log를 처리해서 Elasticsearch로 보내기 위한 config 세팅
+Logstash에서 nginx log 처리를 위해 제공해주는 &lt;a href=&quot;https://www.elastic.co/guide/en/logstash/current/logstash-config-for-filebeat-modules.html#parsing-nginx&quot;&gt;config&lt;/a&gt; 사용&lt;/li&gt;
+  &lt;li&gt;아래 내용을 logstash.conf(원하는 파일명)로 저장&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;input {
+  beats {
+    port =&amp;gt; 5044
+    host =&amp;gt; &quot;0.0.0.0&quot;
+  }
+}
+filter {
+  if [fileset][module] == &quot;nginx&quot; {
+    if [fileset][name] == &quot;access&quot; {
+      grok {
+        match =&amp;gt; { &quot;message&quot; =&amp;gt; [&quot;%{IPORHOST:[nginx][access][remote_ip]} - %{DATA:[nginx][access][user_name]} \[%{HTTPDATE:[nginx][access][time]}\] \&quot;%{WORD:[nginx][access][method]} %{DATA:[nginx][access][url]} HTTP/%{NUMBER:[nginx][access][http_version]}\&quot; %{NUMBER:[nginx][access][response_code]} %{NUMBER:[nginx][access][body_sent][bytes]} \&quot;%{DATA:[nginx][access][referrer]}\&quot; \&quot;%{DATA:[nginx][access][agent]}\&quot;&quot;] }
+        remove_field =&amp;gt; &quot;message&quot;
+      }
+      mutate {
+        add_field =&amp;gt; { &quot;read_timestamp&quot; =&amp;gt; &quot;%{@timestamp}&quot; }
+      }
+      date {
+        match =&amp;gt; [ &quot;[nginx][access][time]&quot;, &quot;dd/MMM/YYYY:H:m:s Z&quot; ]
+        remove_field =&amp;gt; &quot;[nginx][access][time]&quot;
+      }
+      useragent {
+        source =&amp;gt; &quot;[nginx][access][agent]&quot;
+        target =&amp;gt; &quot;[nginx][access][user_agent]&quot;
+        remove_field =&amp;gt; &quot;[nginx][access][agent]&quot;
+      }
+      geoip {
+        source =&amp;gt; &quot;[nginx][access][remote_ip]&quot;
+        target =&amp;gt; &quot;[nginx][access][geoip]&quot;
+      }
+    }
+    else if [fileset][name] == &quot;error&quot; {
+      grok {
+        match =&amp;gt; { &quot;message&quot; =&amp;gt; [&quot;%{DATA:[nginx][error][time]} \[%{DATA:[nginx][error][level]}\] %{NUMBER:[nginx][error][pid]}#%{NUMBER:[nginx][error][tid]}: (\*%{NUMBER:[nginx][error][connection_id]} )?%{GREEDYDATA:[nginx][error][message]}&quot;] }
+        remove_field =&amp;gt; &quot;message&quot;
+      }
+      mutate {
+        rename =&amp;gt; { &quot;@timestamp&quot; =&amp;gt; &quot;read_timestamp&quot; }
+      }
+      date {
+        match =&amp;gt; [ &quot;[nginx][error][time]&quot;, &quot;YYYY/MM/dd H:m:s&quot; ]
+        remove_field =&amp;gt; &quot;[nginx][error][time]&quot;
+      }
+    }
+  }
+}
+output {
+  elasticsearch {
+    hosts =&amp;gt; localhost
+    manage_template =&amp;gt; false
+    index =&amp;gt; &quot;%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}&quot;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;config 파일을 사용해서 Logstash 실행&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ cd logstash-6.2.4/bin
+$ ./logstash -f logstash.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3&gt;Filebeat 시작하기&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.elastic.co/kr/downloads/beats/filebeat&quot;&gt;Filebeat 다운로드&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ tar -xvzf filebeat-6.2.4-linux-x86_64.tar.gz
+$ cd filebeat-6.2.4-linux-x86_64
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;nginx log를 가져가기 위해서 세팅&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ vi filebeat-6.2.4-linux-x86_64/modules.d/nginx.yml
+- module: nginx
+  # Access logs
+  access:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths:
+      - /usr/local/nginx/logs/access.log*
+
+  # Error logs
+  error:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths:
+      - /usr/local/nginx/logs/error.log*
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;Filebeat의 output을 Logstash로 설정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ vi filebeat-6.2.4-linux-x86_64/filebeat.yml
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  # The Logstash hosts
+  hosts: [&quot;localhost:5044&quot;]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;nginx module를 사용해서 Filebeat 실행&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ./filebeat modules enable nginx
+$ ./filebeat modules list
+$ ./filebeat setup -e # Set up the initial environment
+$ ./filebeat -e # Run Filebeat
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 09 May 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>Kibana 설치 및 시작하기</title>
         <link>/elastic/2018/05/04/001.html</link>
         <guid isPermaLink="true">/elastic/2018/05/04/001.html</guid>
         <description>&lt;blockquote&gt;
-
+  &lt;p&gt;Kibana를 설치하고 샘플 데이터로 간단한 대시보드를 생성해보자.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
