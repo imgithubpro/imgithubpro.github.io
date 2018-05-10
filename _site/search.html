@@ -48,7 +48,7 @@
 	<div class="branding">
 		
 		<a href="/">
-			<img class="avatar" src="/assets/img/avatar.png" alt=""/>
+			<img class="avatar" src="/assets/img/front.png" alt=""/>
 		</a>
 		
 		<h1 class="site-title">
@@ -184,6 +184,28 @@
 
 <script>
   window.store = {
+    
+      "develop-2018-05-10-001-html": {
+        "title": "IntelliJ 단축키 정리(Mac)",
+        "tags": "intellij, mac, keymap",
+        "date": "May 10, 2018",
+        "author": "",
+        "category": "",
+        "content": "  자주 사용하는 IntelliJ 단축키를 정리해보자.Search / Replace  모든 검색 : Double shift  치환(Replace) : command + REditing  파라미터 정보 보기 : command + PRefactoring  이름 변경(Rename) : shift + F6Navigation  클래스 찾기 : command + O  파일 찾기 : command + shift + O  이전/이후 탭으로 이동 : command + [ / ]  왼쪽/오른쪽 탭으로 이동 : command + shift [ / ]  라인으로 이동 : command + L  선언으로 이동 : command + B, command + Click  구현으로 이동 : command + alt + BCompile and Run  make 프로젝트 : command + F9",
+        "url": "//develop/2018/05/10/001.html"
+      }
+      ,
+    
+      "linux-2018-05-09-002-html": {
+        "title": "curl 자주 사용하는 옵션 정리",
+        "tags": "curl, command, linux",
+        "date": "May 9, 2018",
+        "author": "",
+        "category": "",
+        "content": "  자주 사용하는 curl 명령 옵션을 예제와 함께 정리해보자.사용방법curl [options] [URL...]옵션  -d, –data &lt;data&gt;          POST요청의 data를 보낼 때 사용      -d 옵션을 사용한 경우 POST로 요청됨  ```  $ curl -d “var1=data1&amp;var2=data2” \\               http://www.where.com/guest.cgi        $ curl http://example.com/ -d ‘{“key”:”value”}’  ```    -H, –header &lt;header/@file&gt;          헤더 세팅          $ curl -H \"Accept:application/json\" -H \"Accept-encoding:gzip\" http://example.com/                      -i, –include          HTTP 응답의 헤더 출력        -o, –output &lt;file&gt;          output을 stdout 대신에 에 출력          $ curl -o aa example.com -o bb example.net                      -x, –proxy [protocol://]host[:port]          프록시 지정          $ curl -x http://proxy_host:proxy_port http://example.com                      -v, –verbose          디버깅을 위한 verbose 모드        -X, –request &lt;command&gt;          요청 메소드 지정(기본값은 GET)      일반적으로는 옵션에 따라 적절한 메소드가 호출되므로 굳이 지정하지 않아도 됨      참고 : https://curl.haxx.se/docs/manpage.html",
+        "url": "//linux/2018/05/09/002.html"
+      }
+      ,
     
       "elastic-2018-05-09-001-html": {
         "title": "Elastic Stack을 사용한 nginx 로그 모니터링",

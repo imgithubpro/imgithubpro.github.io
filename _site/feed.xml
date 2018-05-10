@@ -5,7 +5,129 @@
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://localhost:4000/</link>
     <description></description>
-    <pubDate>Wed, 09 May 2018 10:55:51 +0900</pubDate>
+    <pubDate>Thu, 10 May 2018 09:26:20 +0900</pubDate>
+    
+      <item>
+        <title>IntelliJ 단축키 정리(Mac)</title>
+        <link>/develop/2018/05/10/001.html</link>
+        <guid isPermaLink="true">/develop/2018/05/10/001.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;자주 사용하는 IntelliJ 단축키를 정리해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3&gt;Search / Replace&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;모든 검색 : &lt;code class=&quot;highlighter-rouge&quot;&gt;Double shift&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;치환(Replace) : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + R&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Editing&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;파라미터 정보 보기 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + P&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Refactoring&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;이름 변경(Rename) : &lt;code class=&quot;highlighter-rouge&quot;&gt;shift + F6&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Navigation&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;클래스 찾기 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + O&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;파일 찾기 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + shift + O&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;이전/이후 탭으로 이동 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + [ / ]&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;왼쪽/오른쪽 탭으로 이동 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + shift [ / ]&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;라인으로 이동 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + L&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;선언으로 이동 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + B&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;command + Click&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;구현으로 이동 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + alt + B&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;Compile and Run&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;make 프로젝트 : &lt;code class=&quot;highlighter-rouge&quot;&gt;command + F9&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 10 May 2018 00:00:00 +0900</pubDate>
+      </item>
+    
+      <item>
+        <title>curl 자주 사용하는 옵션 정리</title>
+        <link>/linux/2018/05/09/002.html</link>
+        <guid isPermaLink="true">/linux/2018/05/09/002.html</guid>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;자주 사용하는 curl 명령 옵션을 예제와 함께 정리해보자.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3&gt;사용방법&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl [options] [URL...]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3&gt;옵션&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;-d, –data &amp;lt;data&amp;gt;&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;POST요청의 data를 보낼 때 사용&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-d&lt;/code&gt; 옵션을 사용한 경우 POST로 요청됨
+  ```
+  $ curl -d “var1=data1&amp;amp;var2=data2” \ 
+              http://www.where.com/guest.cgi&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;$ curl http://example.com/ -d ‘{“key”:”value”}’
+  ```&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-H, –header &amp;lt;header/@file&amp;gt;&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;헤더 세팅
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  $ curl -H &quot;Accept:application/json&quot; -H &quot;Accept-encoding:gzip&quot; http://example.com/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-i, –include&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;HTTP 응답의 헤더 출력&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-o, –output &amp;lt;file&amp;gt;&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;output을 stdout 대신에 &lt;file&gt;에 출력
+&lt;/file&gt;        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  $ curl -o aa example.com -o bb example.net
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-x, –proxy [protocol://]host[:port]&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;프록시 지정
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  $ curl -x http://proxy_host:proxy_port http://example.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-v, –verbose&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;디버깅을 위한 verbose 모드&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;-X, –request &amp;lt;command&amp;gt;&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;요청 메소드 지정(기본값은 GET)&lt;/li&gt;
+      &lt;li&gt;일반적으로는 옵션에 따라 적절한 메소드가 호출되므로 굳이 지정하지 않아도 됨&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;
+참고 : &lt;a href=&quot;https://curl.haxx.se/docs/manpage.html&quot;&gt;https://curl.haxx.se/docs/manpage.html&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 09 May 2018 00:00:00 +0900</pubDate>
+      </item>
     
       <item>
         <title>Elastic Stack을 사용한 nginx 로그 모니터링</title>

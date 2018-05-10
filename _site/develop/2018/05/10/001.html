@@ -2,8 +2,8 @@
 <html class="no-js">
   <head>
 	<meta charset="utf-8">
-	<title>VirtualBox 설치하기 | imgithubpro</title>
-	<meta name="description" content="  CentOS 7 에 VirtualBox 설치해보자.">
+	<title>IntelliJ 단축키 정리(Mac) | imgithubpro</title>
+	<meta name="description" content="  자주 사용하는 IntelliJ 단축키를 정리해보자.">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<!-- CSS -->
@@ -13,7 +13,7 @@
 	<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
 
 	<!-- Canonical -->
-	<link rel="canonical" href="/linux/2018/04/29/002.html">
+	<link rel="canonical" href="/develop/2018/05/10/001.html">
 
 	<!-- RSS -->
 	<link rel="alternate" type="application/atom+xml" title="imgithubpro" href="/feed.xml" />
@@ -171,55 +171,60 @@
     <div class="content">
       <article >
   <header style="background-image: url('/')">
-    <h1 class="title">VirtualBox 설치하기</h1>
+    <h1 class="title">IntelliJ 단축키 정리(Mac)</h1>
     
     <p class="meta">
-      April 29, 2018
+      May 10, 2018
       
     </p>
   </header>
   <section class="post-content"><blockquote>
-  <p>CentOS 7 에 VirtualBox 설치해보자.</p>
+  <p>자주 사용하는 IntelliJ 단축키를 정리해보자.</p>
 </blockquote>
 
+<h3>Search / Replace</h3>
+<ul>
+  <li>모든 검색 : <code class="highlighter-rouge">Double shift</code></li>
+  <li>치환(Replace) : <code class="highlighter-rouge">command + R</code></li>
+</ul>
+
+<h3>Editing</h3>
+<ul>
+  <li>파라미터 정보 보기 : <code class="highlighter-rouge">command + P</code></li>
+</ul>
+
+<h3>Refactoring</h3>
+<ul>
+  <li>이름 변경(Rename) : <code class="highlighter-rouge">shift + F6</code></li>
+</ul>
+
+<h3>Navigation</h3>
+<ul>
+  <li>클래스 찾기 : <code class="highlighter-rouge">command + O</code></li>
+  <li>파일 찾기 : <code class="highlighter-rouge">command + shift + O</code></li>
+  <li>이전/이후 탭으로 이동 : <code class="highlighter-rouge">command + [ / ]</code></li>
+  <li>왼쪽/오른쪽 탭으로 이동 : <code class="highlighter-rouge">command + shift [ / ]</code></li>
+  <li>라인으로 이동 : <code class="highlighter-rouge">command + L</code></li>
+  <li>선언으로 이동 : <code class="highlighter-rouge">command + B</code>, <code class="highlighter-rouge">command + Click</code></li>
+  <li>구현으로 이동 : <code class="highlighter-rouge">command + alt + B</code></li>
+</ul>
+
+<h3>Compile and Run</h3>
+<ul>
+  <li>make 프로젝트 : <code class="highlighter-rouge">command + F9</code></li>
+</ul>
+
 <p><br /></p>
-<h3>VirtualBox repo 추가</h3>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd /etc/yum.repos.d/
-$ sudo wget http://download.virtualbox.org/virtualbox/rpm/el/virtualbox.repo
-</code></pre></div></div>
-<ul>
-  <li>proxy가 있는 경우 : <code class="highlighter-rouge">-e use_proxy=yes -e http_proxy=http://proxy.yourhost:port</code> 추가</li>
-</ul>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo yum repolist
-$ yum list VirtualBox*
-</code></pre></div></div>
-<ul>
-  <li>원하는 VirtualBox 버전 선택</li>
-</ul>
-
-<p><br /></p>
-<h3> VirtualBox install</h3>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo yum install VirtualBox-5.0
-</code></pre></div></div>
-<ul>
-  <li>yum proxy 설정 : <code class="highlighter-rouge">/etc/yum.conf</code>에 <code class="highlighter-rouge">proxy=http://proxy.yourhost:port</code> 추가</li>
-</ul>
-
-<p>[참고] 의존성 라이브러리 rpm으로 직접 설치</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ rpm -ivh 패키지명
-</code></pre></div></div>
 </section>
   
 <footer>
   <div class="tags">
     
-    <a class="tag" href="/tags#centos">#centos</a>
+    <a class="tag" href="/tags#intellij">#intellij</a>
     
-    <a class="tag" href="/tags#virtualbox">#virtualbox</a>
+    <a class="tag" href="/tags#mac">#mac</a>
     
-    <a class="tag" href="/tags#install">#install</a>
+    <a class="tag" href="/tags#keymap">#keymap</a>
     
   </div>
 </footer>
